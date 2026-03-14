@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Calendar, Settings, Plus, Edit, Trash2, LogOut, Activity, CalendarDays, Trophy, Info, AlertCircle } from 'lucide-react';
+import { Users, Calendar, Settings, Plus, Edit, Trash2, LogOut, Activity, CalendarDays, Trophy, Info, AlertCircle, MessageSquare, ClipboardCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,6 +18,9 @@ import { TournamentDialog, TournamentFormData } from '@/components/dialogs/Tourn
 import { SeriesDialog, SeriesFormData } from '@/components/dialogs/SeriesDialog';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { DataHealthDashboard } from '@/components/DataHealthDashboard';
+import { CSVImportDialog } from '@/components/CSVImportDialog';
+import { MatchNotesEditor } from '@/components/MatchNotesEditor';
+import { AttendanceManager } from '@/components/AttendanceManager';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -61,6 +64,7 @@ interface Match {
   tournament_id: number | null;
   series_id?: number | null;
   player_of_the_match_id?: number | null;
+  notes?: string | null;
   created_at: string;
 }
 
@@ -125,6 +129,7 @@ const Admin = () => {
   const [seriesDialogOpen, setSeriesDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSampleDialogOpen, setDeleteSampleDialogOpen] = useState(false);
+  const [notesMatch, setNotesMatch] = useState<Match | null>(null);
 
   // Bulk assign
   const [bulkAssignSeriesId, setBulkAssignSeriesId] = useState<string>('');
@@ -682,6 +687,7 @@ const Admin = () => {
                 { value: 'series', icon: Trophy, label: 'Series' },
                 { value: 'performance', icon: Activity, label: 'Performance' },
                 { value: 'seasons', icon: CalendarDays, label: 'Seasons' },
+                { value: 'attendance', icon: ClipboardCheck, label: 'Attendance' },
                 { value: 'team', icon: Settings, label: 'Team Settings' },
                 { value: 'scoring', icon: Info, label: 'Scoring' },
                 { value: 'health', icon: AlertCircle, label: 'Data Health' },
@@ -703,9 +709,12 @@ const Admin = () => {
                     <CardDescription>Add and manage your team's players</CardDescription>
                   </div>
                   {isAdmin && (
-                    <Button onClick={() => { setEditingPlayer(undefined); setPlayerDialogOpen(true); }}>
-                      <Plus className="w-4 h-4 mr-2" />Add Player
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button onClick={() => { setEditingPlayer(undefined); setPlayerDialogOpen(true); }}>
+                        <Plus className="w-4 h-4 mr-2" />Add Player
+                      </Button>
+                      {teamId && <CSVImportDialog teamId={teamId} onImportComplete={fetchData} />}
+                    </div>
                   )}
                 </CardHeader>
                 <CardContent className="p-0">
@@ -818,7 +827,8 @@ const Admin = () => {
                               <TableCell>{match.overs}</TableCell>
                               {isAdmin && (
                                 <TableCell className="text-right">
-                                  <div className="flex justify-end gap-2">
+                                  <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="icon" onClick={() => setNotesMatch(match)} title="Notes"><MessageSquare className="w-4 h-4" /></Button>
                                     <Button variant="ghost" size="icon" onClick={() => handleEditMatch(match)}><Edit className="w-4 h-4" /></Button>
                                     <Button variant="ghost" size="icon" onClick={() => handleDeleteClick('match', match.id, match.opponent_name || 'this match')}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                                   </div>
@@ -1127,6 +1137,14 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
+            {/* ATTENDANCE */}
+            <TabsContent value="attendance">
+              <AttendanceManager
+                players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))}
+                matches={matches.map(m => ({ id: m.id, match_date: m.match_date, opponent_name: m.opponent_name, venue: m.venue }))}
+              />
+            </TabsContent>
+
             {/* TEAM SETTINGS */}
             <TabsContent value="team">
               <Card>
@@ -1195,6 +1213,16 @@ const Admin = () => {
       <TournamentDialog open={tournamentDialogOpen} onOpenChange={(open) => { setTournamentDialogOpen(open); if (!open) setEditingTournament(undefined); }} onSave={handleSaveTournament} tournament={editingTournament} saving={saving} />
       <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleConfirmDelete} title={`Delete ${deleteTarget?.type ? deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1) : ''}?`} description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`} isLoading={saving} />
       <DeleteConfirmDialog open={deleteSampleDialogOpen} onOpenChange={setDeleteSampleDialogOpen} onConfirm={handleConfirmDeleteSampleData} title="Delete sample data?" description='This will remove all records prefixed with "(Sample)" and all related performance inputs. This action cannot be undone.' isLoading={saving} />
+      {notesMatch && (
+        <MatchNotesEditor
+          matchId={notesMatch.id}
+          matchLabel={`${new Date(notesMatch.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} vs ${notesMatch.opponent_name || 'Unknown'}`}
+          initialNotes={notesMatch.notes || null}
+          open={!!notesMatch}
+          onOpenChange={(open) => { if (!open) setNotesMatch(null); }}
+          onSaved={fetchData}
+        />
+      )}
     </div>
   );
 };

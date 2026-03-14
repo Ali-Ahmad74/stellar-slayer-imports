@@ -230,6 +230,52 @@ export type Database = {
           },
         ]
       }
+      match_attendance: {
+        Row: {
+          attended: boolean
+          created_at: string
+          id: string
+          match_id: number
+          player_id: number
+        }
+        Insert: {
+          attended?: boolean
+          created_at?: string
+          id?: string
+          match_id: number
+          player_id: number
+        }
+        Update: {
+          attended?: boolean
+          created_at?: string
+          id?: string
+          match_id?: number
+          player_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_attendance_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_attendance_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "match_attendance_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_templates: {
         Row: {
           created_at: string
@@ -270,6 +316,7 @@ export type Database = {
           created_at: string
           id: number
           match_date: string
+          notes: string | null
           opponent_name: string | null
           opponent_score: number | null
           our_score: number | null
@@ -286,6 +333,7 @@ export type Database = {
           created_at?: string
           id?: number
           match_date: string
+          notes?: string | null
           opponent_name?: string | null
           opponent_score?: number | null
           our_score?: number | null
@@ -302,6 +350,7 @@ export type Database = {
           created_at?: string
           id?: number
           match_date?: string
+          notes?: string | null
           opponent_name?: string | null
           opponent_score?: number | null
           our_score?: number | null
