@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = await supabase
       .from('teams')
       .select('*')
-      .eq('owner_user_id', (await supabase.auth.getUser()).data.user?.id ?? '')
+      .limit(1)
       .maybeSingle();
     setTeam(data ?? null);
     setTeamLoading(false);

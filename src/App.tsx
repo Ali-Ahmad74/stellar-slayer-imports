@@ -44,7 +44,7 @@ const App = () => (
               <Route path="/compare" element={<Compare />} />
               <Route path="/matches" element={<MatchHistory />} />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/team/:teamName" element={<TeamProfile />} />
+              <Route path="/team" element={<TeamProfile />} />
               <Route path="/series" element={<SeriesList />} />
               <Route path="/series/:id" element={<SeriesDetail />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
