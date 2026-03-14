@@ -416,7 +416,7 @@ const PlayerProfile = () => {
                 )}
                 <div className="flex items-center gap-1.5">
                   <Hash className="w-3.5 h-3.5 text-white/50" />
-                  <span>{stats?.matches || 0} Matches</span>
+                  <span>{stats?.matches || 0} Matches{selectedSeasonId !== 'all' ? ` in ${selectedSeasonName}` : ' (All Seasons)'}</span>
                 </div>
                 {player.jersey_number && (
                   <div className="flex items-center gap-1.5">
