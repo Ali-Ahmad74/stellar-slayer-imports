@@ -741,8 +741,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
 
     // Horizontal auto-scroll within the scroll-area viewport (avoid scrolling the whole page)
     requestAnimationFrame(() => {
-      const root = scrollAreaRef.current;
-      const viewport = root?.querySelector<HTMLElement>("[data-radix-scroll-area-viewport]");
+      const viewport = scrollAreaRef.current;
       if (!viewport) return;
 
       const cellRect = el.getBoundingClientRect();
@@ -1119,18 +1118,11 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
           </Collapsible>
         )}
 
-        <ScrollArea
+        <div
           ref={scrollAreaRef}
-          className="h-[520px] rounded-lg border border-border overscroll-contain"
+          className="h-[520px] rounded-lg border border-border overflow-auto overscroll-contain touch-pan-x touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
           onPaste={handlePaste}
-          onWheelCapture={(e) => {
-            // Prevent the parent page from scrolling while using the grid.
-            e.stopPropagation();
-          }}
-          onTouchMoveCapture={(e) => {
-            // Same for touch scrolling on mobile.
-            e.stopPropagation();
-          }}
         >
           <div className="min-w-[1400px]">
             <div className="sticky top-0 z-20 bg-background border-b border-border">
@@ -1328,7 +1320,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
         </CardContent>
       </Card>
 
