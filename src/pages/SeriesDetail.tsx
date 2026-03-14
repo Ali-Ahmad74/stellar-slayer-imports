@@ -7,7 +7,8 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { ShareSeriesHighlightsDialog } from "@/components/ShareSeriesHighlightsDialog";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
@@ -147,6 +148,7 @@ export default function SeriesDetail() {
   const seriesId = Number(id);
 
   const { teamSettings } = useTeamSettings();
+  const { isAdmin } = useAuth();
 
   const [series, setSeries] = useState<Series | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -585,7 +587,25 @@ export default function SeriesDetail() {
                           transition={{ duration: 0.25 }}
                           className="border-t"
                         >
-                          <MatchScorecard matchId={m.id} />
+                          <MatchScorecard 
+                            matchId={m.id}
+                            showExport={isAdmin}
+                            matchMeta={{
+                              date: new Date(m.match_date).toLocaleDateString(),
+                              opponent: m.opponent_name || '',
+                              venue: m.venue || '',
+                              ourScore: m.our_score,
+                              opponentScore: m.opponent_score,
+                              result: m.result || '',
+                              overs: m.overs,
+                              seriesName: series.name,
+                            }}
+                            exportOptions={{
+                              teamName: teamSettings?.team_name,
+                              logoUrl: teamSettings?.team_logo_url,
+                              watermarkHandle: teamSettings?.watermark_handle,
+                            }}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
