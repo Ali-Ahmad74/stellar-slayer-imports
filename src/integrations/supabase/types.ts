@@ -17,6 +17,7 @@ export type Database = {
       batting_inputs: {
         Row: {
           balls: number
+          batting_position: number | null
           created_at: string
           dismissal_type: string | null
           fours: number
@@ -30,6 +31,7 @@ export type Database = {
         }
         Insert: {
           balls?: number
+          batting_position?: number | null
           created_at?: string
           dismissal_type?: string | null
           fours?: number
@@ -43,6 +45,7 @@ export type Database = {
         }
         Update: {
           balls?: number
+          batting_position?: number | null
           created_at?: string
           dismissal_type?: string | null
           fours?: number
@@ -273,6 +276,75 @@ export type Database = {
           {
             foreignKeyName: "match_attendance_player_id_fkey"
             columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_partnerships: {
+        Row: {
+          balls: number
+          created_at: string
+          id: number
+          match_id: number
+          player1_id: number
+          player2_id: number
+          runs: number
+          wicket_number: number
+        }
+        Insert: {
+          balls?: number
+          created_at?: string
+          id?: number
+          match_id: number
+          player1_id: number
+          player2_id: number
+          runs?: number
+          wicket_number: number
+        }
+        Update: {
+          balls?: number
+          created_at?: string
+          id?: number
+          match_id?: number
+          player1_id?: number
+          player2_id?: number
+          runs?: number
+          wicket_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_partnerships_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_partnerships_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "match_partnerships_player1_id_fkey"
+            columns: ["player1_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_partnerships_player2_id_fkey"
+            columns: ["player2_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "match_partnerships_player2_id_fkey"
+            columns: ["player2_id"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
