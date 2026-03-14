@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Trophy, Users, BarChart3, Settings, Medal, GitCompare, Calendar, LayoutDashboard, Menu, X } from 'lucide-react';
+import { Trophy, Users, Settings, Medal, GitCompare, Calendar, LayoutDashboard, Shield, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useTeamSettings } from '@/hooks/useTeamSettings';
@@ -31,6 +31,10 @@ const navItems = [{
   path: '/matches',
   label: 'Matches',
   icon: Calendar
+}, {
+  path: '/team',
+  label: 'Team',
+  icon: Shield
 }];
 
 export function Header() {
