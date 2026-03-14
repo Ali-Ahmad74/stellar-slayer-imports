@@ -550,14 +550,42 @@ const PlayerProfile = () => {
               <FormAnalysisChart data={formData} stats={formStats} type="batting" />
             </motion.div>
 
-            {/* Opponent Breakdown - full width */}
+            {/* Best Performances */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.65 }}
+            >
+              <PlayerBestPerformances battingRecords={battingRecords} bowlingRecords={bowlingRecords} />
+            </motion.div>
+
+            {/* Match Log */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
+            >
+              <PlayerMatchLog battingRecords={battingRecords} bowlingRecords={bowlingRecords} />
+            </motion.div>
+
+            {/* Opponent Breakdown - full width */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.75 }}
               className="lg:col-span-2"
             >
               <OpponentBreakdown playerId={playerId!} />
+            </motion.div>
+
+            {/* Performance Trends - full width */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="lg:col-span-2"
+            >
+              <PlayerPerformanceChart playerId={playerId!} playerName={player.name} />
             </motion.div>
           </div>
         )}
