@@ -64,6 +64,7 @@ interface Match {
   tournament_id: number | null;
   series_id?: number | null;
   player_of_the_match_id?: number | null;
+  notes?: string | null;
   created_at: string;
 }
 
