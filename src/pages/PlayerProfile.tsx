@@ -594,58 +594,7 @@ const PlayerProfile = () => {
               </Card>
             </motion.div>
 
-            {/* Player Details Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-            >
-              <Card variant="elevated">
-                <CardHeader className="bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-t-xl">
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">📋</span>
-                    Player Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: 'Full Name', value: player.name, icon: '👤' },
-                      { label: 'Role', value: player.role, icon: '🏏' },
-                      { label: 'Jersey #', value: player.jersey_number ? `#${player.jersey_number}` : '—', icon: '#️⃣' },
-                      { label: 'Nationality', value: player.nationality || '—', icon: '🌍' },
-                      { label: 'Age', value: player.date_of_birth ? (() => {
-                        const today = new Date();
-                        const birth = new Date(player.date_of_birth!);
-                        let age = today.getFullYear() - birth.getFullYear();
-                        const m = today.getMonth() - birth.getMonth();
-                        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-                        return `${age} years`;
-                      })() : '—', icon: '🎂' },
-                      { label: 'Date of Birth', value: player.date_of_birth ? new Date(player.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', icon: '📅' },
-                      { label: 'Debut', value: player.debut_date ? new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', icon: '⭐' },
-                      { label: 'Batting Style', value: player.batting_style || '—', icon: '🏏' },
-                      { label: 'Bowling Style', value: player.bowling_style || '—', icon: '🎯' },
-                      { label: 'Total Matches', value: stats?.matches || 0, icon: '📊' },
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-start gap-2 p-2 bg-muted/30 rounded-lg">
-                        <span className="text-sm mt-0.5">{item.icon}</span>
-                        <div className="min-w-0">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{item.label}</p>
-                          <p className="text-sm font-semibold text-foreground truncate">{item.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {player.bio && (
-                    <div className="mt-4 pt-3 border-t border-border">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Bio</p>
-                      <p className="text-sm text-muted-foreground italic">{player.bio}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+
 
             {/* Fielding Stats */}
             <motion.div
