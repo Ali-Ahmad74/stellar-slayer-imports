@@ -342,6 +342,44 @@ const Compare = () => {
                 </CardContent>
               </Card>
 
+              {/* Radar Chart */}
+              {radarData.length > 0 && (
+                <Card variant="elevated">
+                  <CardHeader>
+                    <CardTitle className="text-lg">📊 Radar Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <RadarChart data={radarData}>
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis dataKey="stat" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} />
+                        {selectedPlayers.map((p, i) => (
+                          <Radar
+                            key={p.id}
+                            name={p.name}
+                            dataKey={p.name}
+                            stroke={RADAR_COLORS[i % RADAR_COLORS.length]}
+                            fill={RADAR_COLORS[i % RADAR_COLORS.length]}
+                            fillOpacity={0.15}
+                            strokeWidth={2}
+                          />
+                        ))}
+                        <Legend />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                          formatter={(value: number) => `${value}%`}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Batting Stats */}
               <Card variant="elevated">
                 <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-t-lg">
