@@ -63,6 +63,7 @@ const Compare = () => {
     });
   }, [selectedPlayers]);
 
+  const addPlayer = (player: PlayerWithStats, slotIndex: number) => {
     const newSelected = [...selectedPlayers];
     if (slotIndex < newSelected.length) {
       newSelected[slotIndex] = player;
