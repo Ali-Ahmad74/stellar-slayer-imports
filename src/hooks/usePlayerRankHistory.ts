@@ -52,6 +52,9 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         if (snap.bowling_rank && snap.bowling_rank < highestBowlingRank) {
           highestBowlingRank = snap.bowling_rank;
         }
+        if (snap.fielding_rank && snap.fielding_rank < highestFieldingRank) {
+          highestFieldingRank = snap.fielding_rank;
+        }
         if (snap.overall_rank === 1) daysAtNumber1++;
         
         // Find best season (lowest rank)
