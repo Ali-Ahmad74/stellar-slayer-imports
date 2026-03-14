@@ -25,7 +25,7 @@ import SeriesDetail from "./pages/SeriesDetail";
 
 const queryClient = new QueryClient();
 
-// Cricket Ranking System App with Auth
+// Cricket Ranking System App — single team with role-based auth
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
