@@ -17,7 +17,7 @@ import { PlayerFormBadge } from '@/components/PlayerFormBadge';
 import { PlayerMatchLog } from '@/components/PlayerMatchLog';
 import { SocialShareButtons } from '@/components/SocialShareButtons';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateICCPoints, PlayerStats as PlayerStatsType } from '@/hooks/usePlayerRankings';
+import { calculateICCPoints, PlayerStats as PlayerStatsType, usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { usePlayerSeasons } from '@/hooks/usePlayerSeasons';
 import { usePlayerStatsBySeason } from '@/hooks/usePlayerStatsBySeason';
 import { useFormAnalysis } from '@/hooks/useFormAnalysis';
