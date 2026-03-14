@@ -17,36 +17,31 @@ export interface TeamSettings {
  * In multi-tenant mode each user has their own team.
  */
 export function useTeamSettings() {
-  const { team, teamLoading } = useAuth();
   const [teamSettings, setTeamSettings] = useState<TeamSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [teamId, setTeamId] = useState<string | null>(null);
 
-  const fetchTeamSettings = useCallback(async (teamId?: string) => {
-    const id = teamId ?? team?.id;
-    if (!id) {
-      setTeamSettings(null);
-      setLoading(false);
-      return;
-    }
-
+  const fetchTeamSettings = useCallback(async (overrideId?: string) => {
     setLoading(true);
     setError(null);
 
-    const { data, error } = await supabase
-      .from("teams")
-      .select("name, logo_url, description, tagline, watermark_enabled, watermark_handle, watermark_position")
-      .eq("id", id)
-      .maybeSingle();
+    const query = overrideId
+      ? supabase.from("teams").select("id, name, logo_url, description, tagline, watermark_enabled, watermark_handle, watermark_position").eq("id", overrideId).maybeSingle()
+      : supabase.from("teams").select("id, name, logo_url, description, tagline, watermark_enabled, watermark_handle, watermark_position").limit(1).maybeSingle();
 
-    if (error) {
-      setError(error.message);
+    const { data, error: err } = await query;
+
+    if (err) {
+      setError(err.message);
       setTeamSettings(null);
+      setTeamId(null);
       setLoading(false);
       return;
     }
 
     if (data) {
+      setTeamId(data.id);
       setTeamSettings({
         team_name: data.name,
         team_logo_url: data.logo_url,
@@ -58,16 +53,15 @@ export function useTeamSettings() {
       });
     } else {
       setTeamSettings(null);
+      setTeamId(null);
     }
 
     setLoading(false);
-  }, [team?.id]);
+  }, []);
 
   useEffect(() => {
-    if (!teamLoading) {
-      fetchTeamSettings();
-    }
-  }, [fetchTeamSettings, teamLoading]);
+    fetchTeamSettings();
+  }, [fetchTeamSettings]);
 
   const updateTeamSettings = useCallback(async (patch: Partial<TeamSettings>) => {
     if (!team?.id) throw new Error("No team found");
