@@ -31,10 +31,6 @@ const navItems = [{
   path: '/matches',
   label: 'Matches',
   icon: Calendar
-}, {
-  path: '/team',
-  label: 'Team',
-  icon: Shield
 }];
 
 export function Header() {
