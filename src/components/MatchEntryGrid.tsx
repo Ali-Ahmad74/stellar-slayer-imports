@@ -119,6 +119,7 @@ function emptyDraftRow(): DraftRow {
       fours_conceded: "0",
       sixes_conceded: "0",
       dot_balls: "0",
+      hat_tricks: "0",
     },
     fielding: { catches: "0", runouts: "0", stumpings: "0", dropped_catches: "0" },
   };
