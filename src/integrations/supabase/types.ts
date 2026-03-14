@@ -66,6 +66,13 @@ export type Database = {
             foreignKeyName: "batting_inputs_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "batting_inputs_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -139,6 +146,13 @@ export type Database = {
             foreignKeyName: "bowling_inputs_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "bowling_inputs_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -192,6 +206,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "matches"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fielding_inputs_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "fielding_inputs_player_id_fkey"
@@ -298,6 +319,13 @@ export type Database = {
             foreignKeyName: "matches_player_of_the_match_id_fkey"
             columns: ["player_of_the_match_id"]
             isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "matches_player_of_the_match_id_fkey"
+            columns: ["player_of_the_match_id"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["id"]
           },
@@ -361,6 +389,54 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      point_history: {
+        Row: {
+          batting_points: number
+          bowling_points: number
+          created_at: string
+          fielding_points: number
+          id: number
+          player_id: number
+          record_date: string
+          total_points: number
+        }
+        Insert: {
+          batting_points?: number
+          bowling_points?: number
+          created_at?: string
+          fielding_points?: number
+          id?: number
+          player_id: number
+          record_date?: string
+          total_points?: number
+        }
+        Update: {
+          batting_points?: number
+          bowling_points?: number
+          created_at?: string
+          fielding_points?: number
+          id?: number
+          player_id?: number
+          record_date?: string
+          total_points?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "point_history_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "point_history_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
             referencedColumns: ["id"]
           },
         ]
@@ -492,6 +568,13 @@ export type Database = {
           stats?: Json
         }
         Relationships: [
+          {
+            foreignKeyName: "season_awards_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
           {
             foreignKeyName: "season_awards_player_id_fkey"
             columns: ["player_id"]
@@ -648,6 +731,53 @@ export type Database = {
         }
         Relationships: []
       }
+      tournaments: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string | null
+          id: number
+          is_active: boolean
+          name: string
+          start_date: string | null
+          team_id: string | null
+          tournament_type: string | null
+          venue: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: number
+          is_active?: boolean
+          name: string
+          start_date?: string | null
+          team_id?: string | null
+          tournament_type?: string | null
+          venue?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          id?: number
+          is_active?: boolean
+          name?: string
+          start_date?: string | null
+          team_id?: string | null
+          tournament_type?: string | null
+          venue?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -671,7 +801,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      player_stats: {
+        Row: {
+          bowling_balls: number | null
+          catches: number | null
+          dot_balls: number | null
+          dropped_catches: number | null
+          fifties: number | null
+          five_fers: number | null
+          fours: number | null
+          fours_conceded: number | null
+          hundreds: number | null
+          maidens: number | null
+          matches: number | null
+          no_balls: number | null
+          player_id: number | null
+          runouts: number | null
+          runs_conceded: number | null
+          sixes: number | null
+          sixes_conceded: number | null
+          stumpings: number | null
+          thirties: number | null
+          three_fers: number | null
+          times_out: number | null
+          total_balls: number | null
+          total_runs: number | null
+          wickets: number | null
+          wides: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_team_for_user: {
