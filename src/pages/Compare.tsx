@@ -31,7 +31,38 @@ const Compare = () => {
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
   const [openPopover, setOpenPopover] = useState<number | null>(null);
 
-  const addPlayer = (player: PlayerWithStats, slotIndex: number) => {
+  // Radar chart data
+  const radarData = useMemo(() => {
+    if (selectedPlayers.length < 2) return [];
+    
+    // Normalize stats to 0-100 scale
+    const getMax = (fn: (p: PlayerWithStats) => number) => Math.max(...selectedPlayers.map(fn), 1);
+    
+    const maxRuns = getMax(p => p.stats?.total_runs || 0);
+    const maxWickets = getMax(p => p.stats?.wickets || 0);
+    const maxCatches = getMax(p => p.stats?.catches || 0);
+    const maxSR = getMax(p => p.stats?.total_balls ? (p.stats.total_runs / p.stats.total_balls) * 100 : 0);
+    const maxBatPts = getMax(p => p.iccPoints?.battingPoints || 0);
+    const maxBowlPts = getMax(p => p.iccPoints?.bowlingPoints || 0);
+
+    const categories = [
+      { key: 'Runs', max: maxRuns, fn: (p: PlayerWithStats) => p.stats?.total_runs || 0 },
+      { key: 'Wickets', max: maxWickets, fn: (p: PlayerWithStats) => p.stats?.wickets || 0 },
+      { key: 'Catches', max: maxCatches, fn: (p: PlayerWithStats) => p.stats?.catches || 0 },
+      { key: 'Strike Rate', max: maxSR, fn: (p: PlayerWithStats) => p.stats?.total_balls ? (p.stats.total_runs / p.stats.total_balls) * 100 : 0 },
+      { key: 'Bat Points', max: maxBatPts, fn: (p: PlayerWithStats) => p.iccPoints?.battingPoints || 0 },
+      { key: 'Bowl Points', max: maxBowlPts, fn: (p: PlayerWithStats) => p.iccPoints?.bowlingPoints || 0 },
+    ];
+
+    return categories.map(cat => {
+      const entry: any = { stat: cat.key };
+      selectedPlayers.forEach(p => {
+        entry[p.name] = Math.round((cat.fn(p) / cat.max) * 100);
+      });
+      return entry;
+    });
+  }, [selectedPlayers]);
+
     const newSelected = [...selectedPlayers];
     if (slotIndex < newSelected.length) {
       newSelected[slotIndex] = player;
