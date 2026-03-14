@@ -687,6 +687,7 @@ const Admin = () => {
                 { value: 'series', icon: Trophy, label: 'Series' },
                 { value: 'performance', icon: Activity, label: 'Performance' },
                 { value: 'seasons', icon: CalendarDays, label: 'Seasons' },
+                { value: 'attendance', icon: ClipboardCheck, label: 'Attendance' },
                 { value: 'team', icon: Settings, label: 'Team Settings' },
                 { value: 'scoring', icon: Info, label: 'Scoring' },
                 { value: 'health', icon: AlertCircle, label: 'Data Health' },
