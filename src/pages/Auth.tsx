@@ -128,6 +128,11 @@ const Auth = () => {
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
                     {isSubmitting ? 'Signing in...' : 'Sign In'}
                   </Button>
+                  <div className="text-center">
+                    <Button variant="link" type="button" onClick={() => navigate('/forgot-password')} className="text-sm text-muted-foreground">
+                      Forgot your password?
+                    </Button>
+                  </div>
                 </form>
               </TabsContent>
 
