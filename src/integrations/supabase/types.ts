@@ -894,6 +894,7 @@ export type Database = {
       }
     }
     Functions: {
+      claim_admin_if_none: { Args: never; Returns: boolean }
       create_team_for_user: {
         Args: { p_description?: string; p_team_name: string }
         Returns: string
