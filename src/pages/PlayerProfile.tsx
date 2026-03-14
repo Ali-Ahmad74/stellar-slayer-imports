@@ -355,22 +355,23 @@ const PlayerProfile = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="gradient-header rounded-2xl p-8 mb-8 text-white shadow-lg"
+          className="gradient-header rounded-2xl p-6 sm:p-8 mb-8 text-white shadow-lg"
         >
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
+          <div className="flex flex-col items-center gap-5 mb-6">
             <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="xl" />
-            <div className="text-center md:text-left flex-1">
-              <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
-                <h1 className="font-display text-4xl md:text-5xl font-bold">
+            <div className="text-center flex-1">
+              <div className="flex items-center gap-3 justify-center mb-2">
+                <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold">
                   {player.name}
                 </h1>
                 {player.jersey_number && (
-                  <span className="bg-white/20 backdrop-blur-sm text-white font-display text-2xl font-bold px-3 py-1 rounded-xl">
+                  <span className="bg-white/20 backdrop-blur-sm text-white font-display text-lg font-bold px-2.5 py-0.5 rounded-lg">
                     #{player.jersey_number}
                   </span>
                 )}
               </div>
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
+              
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-3">
                 <RoleBadge role={player.role} />
                 {player.batting_style && (
                   <span className="text-white/80 text-sm">{player.batting_style}</span>
@@ -378,14 +379,12 @@ const PlayerProfile = () => {
                 {player.bowling_style && (
                   <span className="text-white/80 text-sm">• {player.bowling_style}</span>
                 )}
-                {player.nationality && (
-                  <span className="text-white/80 text-sm flex items-center gap-1"><Globe className="w-3 h-3" />{player.nationality}</span>
-                )}
               </div>
-              
-              {/* Bio info line */}
-              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/70 text-sm mb-2">
-                <span>{stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}</span>
+
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-white/70 text-sm mb-3">
+                {player.nationality && (
+                  <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" />{player.nationality}</span>
+                )}
                 {player.date_of_birth && (() => {
                   const today = new Date();
                   const birth = new Date(player.date_of_birth!);
@@ -394,37 +393,42 @@ const PlayerProfile = () => {
                   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
                   return (
                     <span className="flex items-center gap-1">
-                      <Cake className="w-3 h-3" />
-                      {age} years ({new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                      <Cake className="w-3.5 h-3.5" />
+                      Age {age} • Born {new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </span>
                   );
                 })()}
                 {player.debut_date && (
                   <span className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    Debut: {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    <Calendar className="w-3.5 h-3.5" />
+                    Debut {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 )}
               </div>
+
+              <p className="text-white/60 text-sm mb-2">
+                {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
+              </p>
               
               {player.bio && (
-                <p className="text-white/60 text-sm italic max-w-lg">{player.bio}</p>
+                <p className="text-white/50 text-xs italic max-w-md mx-auto">{player.bio}</p>
               )}
               
               {formStats.totalMatches >= 3 && (
-                <PlayerFormBadge 
-                  formTrend={formStats.formTrend} 
-                  consistency={formStats.consistency} 
-                />
+                <div className="mt-2">
+                  <PlayerFormBadge 
+                    formTrend={formStats.formTrend} 
+                    consistency={formStats.consistency} 
+                  />
+                </div>
               )}
             </div>
           </div>
 
-          {/* Rank Cards in Header */}
+          {/* Rank Badges - Compact Single Row */}
           {statsLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-white/70" />
-              <span className="ml-2 text-white/70">Loading stats...</span>
+            <div className="flex items-center justify-center py-4">
+              <Loader2 className="w-5 h-5 animate-spin text-white/70" />
             </div>
           ) : (() => {
             const batRank = getBattingRankings().find(p => p.id === playerId)?.rank;
@@ -432,23 +436,22 @@ const PlayerProfile = () => {
             const fieldRank = getFieldingRankings().find(p => p.id === playerId)?.rank;
             const overallRank = getOverallRankings().find(p => p.id === playerId)?.rank;
             return (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-4 gap-2">
                 {[
-                  { icon: '🏏', label: 'Batting Rank', value: batRank ? `#${batRank}` : '—', color: 'bg-emerald-500/20' },
-                  { icon: '🎯', label: 'Bowling Rank', value: bowlRank ? `#${bowlRank}` : '—', color: 'bg-red-500/20' },
-                  { icon: '🧤', label: 'Fielding Rank', value: fieldRank ? `#${fieldRank}` : '—', color: 'bg-blue-500/20' },
-                  { icon: '👑', label: 'Overall Rank', value: overallRank ? `#${overallRank}` : '—', color: 'bg-yellow-500/20' },
+                  { label: 'BAT', value: batRank ? `#${batRank}` : '—', color: 'bg-emerald-500/20' },
+                  { label: 'BOWL', value: bowlRank ? `#${bowlRank}` : '—', color: 'bg-red-500/20' },
+                  { label: 'FIELD', value: fieldRank ? `#${fieldRank}` : '—', color: 'bg-blue-500/20' },
+                  { label: 'OVERALL', value: overallRank ? `#${overallRank}` : '—', color: 'bg-yellow-500/20' },
                 ].map((item, index) => (
                   <motion.div
                     key={item.label}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 * index }}
-                    className={`${item.color} backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center`}
+                    transition={{ delay: 0.05 * index }}
+                    className={`${item.color} backdrop-blur-sm rounded-lg py-2 px-1 text-center`}
                   >
-                    <span className="text-xl sm:text-2xl mb-1 block">{item.icon}</span>
-                    <p className="text-2xl sm:text-3xl font-bold font-display">{item.value}</p>
-                    <p className="text-xs sm:text-sm text-white/70">{item.label}</p>
+                    <p className="text-lg font-bold font-display leading-tight">{item.value}</p>
+                    <p className="text-[9px] text-white/60 uppercase tracking-widest mt-0.5">{item.label}</p>
                   </motion.div>
                 ))}
               </div>
