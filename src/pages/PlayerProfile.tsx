@@ -280,15 +280,26 @@ const PlayerProfile = () => {
               Share Player Card
             </Button>
             {isAdmin && (
-              <Button 
-                onClick={handleExportPDF} 
-                variant="outline" 
-                className="whitespace-nowrap gap-2"
-                disabled={!hasStats}
-              >
-                <Download className="w-4 h-4" />
-                Export PDF
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleExportPDF} 
+                  variant="outline" 
+                  className="whitespace-nowrap gap-2"
+                  disabled={!hasStats}
+                >
+                  <Download className="w-4 h-4" />
+                  PDF
+                </Button>
+                <Button
+                  onClick={handleExportPNG}
+                  variant="outline"
+                  className="whitespace-nowrap gap-2"
+                  disabled={!hasStats}
+                >
+                  <Image className="w-4 h-4" />
+                  PNG
+                </Button>
+              </div>
             )}
           </div>
         </div>
