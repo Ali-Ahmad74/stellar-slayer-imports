@@ -223,7 +223,9 @@ const Admin = () => {
       const { error } = await supabase.from('players').update({
         name: data.name, role: data.role,
         batting_style: data.batting_style, bowling_style: data.bowling_style, photo_url: data.photo_url,
-      }).eq('id', data.id);
+        date_of_birth: data.date_of_birth, debut_date: data.debut_date,
+        jersey_number: data.jersey_number, nationality: data.nationality, bio: data.bio,
+      } as any).eq('id', data.id);
       if (error) { toast.error('Failed to update player: ' + error.message); }
       else { toast.success('Player updated!'); setPlayerDialogOpen(false); fetchData(); }
     } else {
@@ -231,7 +233,9 @@ const Admin = () => {
         name: data.name, role: data.role,
         batting_style: data.batting_style, bowling_style: data.bowling_style,
         photo_url: data.photo_url, team_id: teamId,
-      });
+        date_of_birth: data.date_of_birth, debut_date: data.debut_date,
+        jersey_number: data.jersey_number, nationality: data.nationality, bio: data.bio,
+      } as any);
       if (error) { toast.error('Failed to add player: ' + error.message); }
       else { toast.success('Player added!'); setPlayerDialogOpen(false); fetchData(); }
     }
