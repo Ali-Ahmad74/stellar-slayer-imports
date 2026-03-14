@@ -485,13 +485,14 @@ const PlayerProfile = () => {
                   {/* Bowling extras */}
                   <div className="mt-4 pt-4 border-t">
                     <h4 className="text-sm font-semibold text-muted-foreground mb-3">Additional Stats</h4>
-                    <div className="grid grid-cols-5 gap-2">
+                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                       {[
                         { value: stats?.dot_balls || 0, label: 'Dots', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
                         { value: stats?.three_fers || 0, label: '3-fers', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
                         { value: stats?.five_fers || 0, label: '5-fers', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' },
-                        { value: stats?.fours_conceded || 0, label: '4s', bg: 'bg-muted', text: '' },
-                        { value: stats?.sixes_conceded || 0, label: '6s', bg: 'bg-muted', text: '' },
+                        { value: (stats as any)?.hat_tricks || 0, label: 'Hat-Tricks', bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-600 dark:text-pink-400' },
+                        { value: stats?.fours_conceded || 0, label: '4s Given', bg: 'bg-muted', text: '' },
+                        { value: stats?.sixes_conceded || 0, label: '6s Given', bg: 'bg-muted', text: '' },
                       ].map((item) => (
                         <div key={item.label} className={`text-center p-2 ${item.bg} rounded-lg`}>
                           <p className={`text-base sm:text-lg font-bold leading-tight ${item.text}`}>{item.value}</p>
