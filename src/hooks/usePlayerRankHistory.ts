@@ -71,6 +71,7 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         bestSeason: bestSeasonName,
         highestBattingRank: highestBattingRank === Infinity ? null : highestBattingRank,
         highestBowlingRank: highestBowlingRank === Infinity ? null : highestBowlingRank,
+        highestFieldingRank: highestFieldingRank === Infinity ? null : highestFieldingRank,
         currentStreak,
       };
     },
