@@ -148,6 +148,7 @@ export default function SeriesDetail() {
   const seriesId = Number(id);
 
   const { teamSettings } = useTeamSettings();
+  const { isAdmin } = useAuth();
 
   const [series, setSeries] = useState<Series | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
