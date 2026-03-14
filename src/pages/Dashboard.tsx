@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { Loader2, Trophy, Target, TrendingUp, Users, Calendar, Zap, Award, Activity, MapPin, Flame, ArrowUp, ArrowDown } from 'lucide-react';
+import { TeamAchievements } from '@/components/TeamAchievements';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line
