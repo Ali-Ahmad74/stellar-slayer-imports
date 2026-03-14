@@ -64,7 +64,7 @@ export function useTeamSettings() {
   }, [fetchTeamSettings]);
 
   const updateTeamSettings = useCallback(async (patch: Partial<TeamSettings>) => {
-    if (!team?.id) throw new Error("No team found");
+    if (!teamId) throw new Error("No team found");
 
     const dbPatch: Record<string, unknown> = { updated_at: new Date().toISOString() };
     if (patch.team_name !== undefined) dbPatch.name = patch.team_name;
@@ -78,7 +78,7 @@ export function useTeamSettings() {
     const { data, error } = await supabase
       .from("teams")
       .update(dbPatch)
-      .eq("id", team.id)
+      .eq("id", teamId)
       .select("name, logo_url, description, tagline, watermark_enabled, watermark_handle, watermark_position")
       .maybeSingle();
 
@@ -97,11 +97,11 @@ export function useTeamSettings() {
     }
 
     return data;
-  }, [team?.id]);
+  }, [teamId]);
 
   return {
     teamSettings,
-    loading: loading || teamLoading,
+    loading,
     error,
     refetch: fetchTeamSettings,
     updateTeamSettings,
