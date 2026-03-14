@@ -61,6 +61,7 @@ const rowSchema = z.object({
       fours_conceded: int0,
       sixes_conceded: int0,
       dot_balls: int0,
+      hat_tricks: int0,
     })
     .optional(),
   fielding: z
