@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
 
 export interface Season {
   id: number;
@@ -12,7 +11,6 @@ export interface Season {
 }
 
 export function useSeasons() {
-  const { team } = useAuth();
   const [seasons, setSeasons] = useState<Season[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,22 +20,11 @@ export function useSeasons() {
     setError(null);
 
     try {
-      let query = supabase
+      const { data, error: fetchError } = await supabase
         .from('seasons')
         .select('*')
         .order('year', { ascending: false });
 
-      // Filter by team if available
-      if (team?.id) {
-        query = query.eq('team_id', team.id);
-      } else {
-        // No team yet — return empty
-        setSeasons([]);
-        setLoading(false);
-        return;
-      }
-
-      const { data, error: fetchError } = await query;
       if (fetchError) throw fetchError;
       setSeasons(data || []);
     } catch (err) {
@@ -60,7 +47,7 @@ export function useSeasons() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [team?.id]);
+  }, []);
 
   const activeSeason = seasons.find(s => s.is_active);
   const activeSeasonId = activeSeason ? String(activeSeason.id) : null;
