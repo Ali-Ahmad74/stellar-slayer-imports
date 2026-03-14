@@ -89,7 +89,7 @@ type DismissalType = "caught" | "bowled" | "run_out" | "stumped" | "lbw" | "hit_
 
 type DraftRow = {
   include: boolean;
-  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null };
+  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null; batting_position: string };
   bowling: {
     balls: string;
     runs_conceded: string;
@@ -108,7 +108,7 @@ type DraftRow = {
 function emptyDraftRow(): DraftRow {
   return {
     include: false,
-    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null },
+    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null, batting_position: "" },
     bowling: {
       balls: "0",
       runs_conceded: "0",
@@ -640,6 +640,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
             sixes: toInt(r.batting.sixes),
             out: r.batting.status === "out",
             dismissal_type: r.batting.status === "out" ? (r.batting.dismissal_type || null) : null,
+            batting_position: toInt(r.batting.batting_position) || null,
           },
           bowling: {
             balls: toInt(r.bowling.balls),
@@ -1131,10 +1132,11 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
             e.stopPropagation();
           }}
         >
-          <div className="min-w-[1200px]">
+          <div className="min-w-[1400px]">
             <div className="sticky top-0 z-20 bg-background border-b border-border">
-              <div className="grid grid-cols-[240px_repeat(5,110px)_repeat(8,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              <div className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
                 <div className="sticky left-0 z-20 bg-background pr-2 border-r border-border">Player</div>
+                <div>#</div>
                 <div>Runs</div>
                 <div>Balls</div>
                 <div>4s</div>
@@ -1149,6 +1151,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                 <div>No-balls</div>
                 <div>4s conc</div>
                 <div>6s conc</div>
+                <div>Hat-tricks</div>
                 <div>Catches</div>
                 <div>Runouts</div>
                 <div>Stump</div>
@@ -1161,7 +1164,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
               return (
                 <div
                   key={p.id}
-                  className="grid grid-cols-[240px_repeat(5,110px)_repeat(8,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
+                  className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
                 >
                   <div className="sticky left-0 z-10 bg-background flex items-center gap-2 pr-2 border-r border-border">
                     <Checkbox
@@ -1177,6 +1180,23 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                       {p.name}
                     </div>
                   </div>
+
+                  {/* Batting Position */}
+                  <Input
+                    inputMode="numeric"
+                    placeholder="#"
+                    value={r.batting.batting_position}
+                    onChange={(e) =>
+                      setRows((prev) => ({
+                        ...prev,
+                        [p.id]: {
+                          ...prev[p.id],
+                          batting: { ...prev[p.id].batting, batting_position: e.target.value },
+                        },
+                      }))
+                    }
+                    className="w-14 text-center"
+                  />
 
                   {/* Batting */}
                   {["runs", "balls", "fours", "sixes"].map((key, idx) => (

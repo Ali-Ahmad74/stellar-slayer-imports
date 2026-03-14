@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { Loader2, Trophy, Target, TrendingUp, Users, Calendar, Zap, Award, Activity, MapPin, Flame, ArrowUp, ArrowDown } from 'lucide-react';
+import { TeamAchievements } from '@/components/TeamAchievements';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line
@@ -498,9 +499,14 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        {/* Team Achievements & Partnerships */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">
+          <TeamAchievements players={players.map(p => ({ id: p.id, name: p.name }))} />
+        </motion.div>
+
         {/* Team Composition & Milestones */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 }}>
             <Card variant="elevated">
               <CardHeader><CardTitle className="text-lg">Team Composition</CardTitle></CardHeader>
               <CardContent>
@@ -517,7 +523,7 @@ const Dashboard = () => {
             </Card>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 }}>
             <Card variant="elevated">
               <CardHeader><CardTitle className="text-lg">Team Milestones</CardTitle></CardHeader>
               <CardContent>
