@@ -719,6 +719,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
         { group: "bowling", key: "no_balls" as const },
         { group: "bowling", key: "fours_conceded" as const },
         { group: "bowling", key: "sixes_conceded" as const },
+        { group: "bowling", key: "hat_tricks" as const },
         { group: "fielding", key: "catches" as const },
         { group: "fielding", key: "runouts" as const },
         { group: "fielding", key: "stumpings" as const },
