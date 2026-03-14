@@ -12,9 +12,19 @@ import {
 import { Trophy, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+interface RankHistoryData {
+  highestOverallRank: number | null;
+  daysAtNumber1: number;
+  bestSeason: string | null;
+  highestBattingRank: number | null;
+  highestBowlingRank: number | null;
+  currentStreak: number;
+}
+
 interface PlayerAchievementsProps {
   stats: PlayerStats;
   compact?: boolean;
+  rankHistory?: RankHistoryData;
 }
 
 export function PlayerAchievements({ stats, compact = false }: PlayerAchievementsProps) {
