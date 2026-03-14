@@ -1,14 +1,248 @@
-// Update this page (the content is just a fallback if you fail to update the page)
-
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Header } from '@/components/Header';
+import { TopPerformers } from '@/components/TopPerformers';
+import { RankingsTable } from '@/components/RankingsTable';
+import { RankingFilters } from '@/components/RankingFilters';
+import { RankingSeasonFilter } from '@/components/RankingSeasonFilter';
+import { HallOfFame } from '@/components/HallOfFame';
+import { SeasonAwardsDisplay } from '@/components/SeasonAwardsDisplay';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePlayerRankings } from '@/hooks/usePlayerRankings';
+import { useBattingRankingsBySeason } from '@/hooks/useBattingRankingsBySeason';
+import { useBowlingRankingsBySeason } from '@/hooks/useBowlingRankingsBySeason';
+import { useFieldingRankingsBySeason } from '@/hooks/useFieldingRankingsBySeason';
+import { useOverallRankingsBySeason } from '@/hooks/useOverallRankingsBySeason';
+import { useSeasons } from '@/hooks/useSeasons';
+import { Loader2, Trophy, Target, Shield, Crown } from 'lucide-react';
+import { SiteFooter } from '@/components/SiteFooter';
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
-};
+  const [minMatches, setMinMatches] = useState(0);
+  const [minOvers, setMinOvers] = useState(0);
+  const [activeTab, setActiveTab] = useState('batting');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
+  const [seasonInitialized, setSeasonInitialized] = useState(false);
+  
+  const { activeSeasonId, loading: seasonsLoading } = useSeasons();
+  
+  // Set default season to active season when loaded
+  useEffect(() => {
+    if (!seasonsLoading && !seasonInitialized && activeSeasonId) {
+      setSelectedSeasonId(activeSeasonId);
+      setSeasonInitialized(true);
+    } else if (!seasonsLoading && !seasonInitialized && !activeSeasonId) {
+      setSelectedSeasonId('all');
+      setSeasonInitialized(true);
+    }
+  }, [seasonsLoading, activeSeasonId, seasonInitialized]);
+  
+  const effectiveSeasonId = selectedSeasonId ?? 'all';
+  
+  const {
+    loading,
+    error,
+    getBattingRankings,
+    getBowlingRankings,
+    getFieldingRankings,
+    getOverallRankings
+  } = usePlayerRankings();
 
+  // Season-filtered rankings
+  const { rankings: battingBySeasonRankings, loading: battingSeasonLoading } = useBattingRankingsBySeason(effectiveSeasonId);
+  const { rankings: bowlingBySeasonRankings, loading: bowlingSeasonLoading } = useBowlingRankingsBySeason(effectiveSeasonId);
+  const { rankings: fieldingBySeasonRankings, loading: fieldingSeasonLoading } = useFieldingRankingsBySeason(effectiveSeasonId);
+  const { rankings: overallBySeasonRankings, loading: overallSeasonLoading } = useOverallRankingsBySeason(effectiveSeasonId);
+
+  // Use season-filtered rankings if a season is selected, otherwise use the hook's filtered rankings
+  const battingRankings = effectiveSeasonId === 'all' ? getBattingRankings(minMatches) : battingBySeasonRankings;
+  const bowlingRankings = effectiveSeasonId === 'all' ? getBowlingRankings(minMatches, minOvers) : bowlingBySeasonRankings;
+  const fieldingRankings = effectiveSeasonId === 'all' ? getFieldingRankings(minMatches) : fieldingBySeasonRankings;
+  
+  // Map overall rankings to include 'rating' property for RankingsTable compatibility
+  const overallRankings = effectiveSeasonId === 'all' 
+    ? getOverallRankings(minMatches) 
+    : overallBySeasonRankings.map(player => ({
+        ...player,
+        rating: player.totalPoints,
+        runs: player.stats?.total_runs,
+        wickets: player.stats?.wickets,
+        catches: player.stats?.catches,
+      }));
+  
+  const isSeasonLoading = effectiveSeasonId !== 'all' && (battingSeasonLoading || bowlingSeasonLoading || fieldingSeasonLoading || overallSeasonLoading);
+
+  // Top performers - use season-filtered if selected, otherwise unfiltered
+  const topBatting = effectiveSeasonId === 'all' ? getBattingRankings(0) : battingBySeasonRankings;
+  const topBowling = effectiveSeasonId === 'all' ? getBowlingRankings(0, 0) : bowlingBySeasonRankings;
+  const topFielding = effectiveSeasonId === 'all' ? getFieldingRankings(0) : fieldingBySeasonRankings;
+
+  const tabConfig = [{
+    value: 'batting',
+    label: 'Batting',
+    icon: Trophy,
+    color: 'from-emerald-500 to-teal-600'
+  }, {
+    value: 'bowling',
+    label: 'Bowling',
+    icon: Target,
+    color: 'from-red-500 to-rose-600'
+  }, {
+    value: 'fielding',
+    label: 'Fielding',
+    icon: Shield,
+    color: 'from-blue-500 to-indigo-600'
+  }, {
+    value: 'overall',
+    label: 'Overall',
+    icon: Crown,
+    color: 'from-amber-500 to-orange-600'
+  }];
+  return <div className="min-h-screen bg-background">
+      <Header />
+      
+      <main className="container py-8 md:py-12">
+        {loading ? <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
+              <Loader2 className="w-10 h-10 animate-spin text-primary relative" />
+            </div>
+            <span className="text-muted-foreground font-medium">Loading rankings...</span>
+          </div> : error ? <div className="text-center py-20">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-8 max-w-md mx-auto">
+              <p className="text-destructive font-medium">Error loading data</p>
+              <p className="text-destructive/70 text-sm mt-2">{error}</p>
+            </div>
+          </div> : <>
+            {/* Hero Section */}
+            <motion.section initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5
+        }} className="text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-bold mb-3 font-display tracking-wide text-foreground">
+                🏆 Top Performers
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto">
+                Track the best players across batting, bowling, and fielding categories
+              </p>
+            </motion.section>
+
+            {/* Season Filter - Under Top Performers heading */}
+            <motion.section initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5,
+          delay: 0.05
+        }} className="mb-8">
+              <div className="flex flex-wrap items-center justify-center gap-4 p-4 bg-card border border-border rounded-xl shadow-sm">
+                <span className="text-sm font-medium text-muted-foreground">Filter by Season:</span>
+                <RankingSeasonFilter 
+                  selectedSeason={effectiveSeasonId} 
+                  onSeasonChange={setSelectedSeasonId} 
+                />
+                {isSeasonLoading && (
+                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                )}
+              </div>
+            </motion.section>
+
+            {/* Top Performers Section */}
+            <motion.section initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5,
+          delay: 0.1
+        }} className="mb-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <TopPerformers title="Top Batsmen" icon="🏏" players={topBatting} statKey="runs" statLabel="Runs" gradient="from-emerald-500 to-teal-600" />
+                <TopPerformers title="Top Bowlers" icon="🎯" players={topBowling} statKey="wickets" statLabel="Wickets" gradient="from-red-500 to-rose-600" />
+                <TopPerformers title="Top Fielders" icon="🧤" players={topFielding} statKey="catches" statLabel="Catches" gradient="from-blue-500 to-indigo-600" />
+              </div>
+            </motion.section>
+
+            {/* Hall of Fame & Season Awards */}
+            <motion.section initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5,
+          delay: 0.15
+        }} className="mb-12 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <HallOfFame seasonId={effectiveSeasonId} />
+              <SeasonAwardsDisplay compact />
+            </motion.section>
+
+            {/* Rankings Tables */}
+            <motion.section initial={{
+          opacity: 0,
+          y: 20
+        }} animate={{
+          opacity: 1,
+          y: 0
+        }} transition={{
+          duration: 0.5,
+          delay: 0.2
+        }}>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="w-full justify-start mb-6 bg-card border border-border shadow-md rounded-xl p-1.5 h-auto flex-wrap gap-1">
+                  {tabConfig.map(tab => {
+                const Icon = tab.icon;
+                return <TabsTrigger key={tab.value} value={tab.value} className={`data-[state=active]:bg-gradient-to-r data-[state=active]:${tab.color} data-[state=active]:text-white data-[state=active]:shadow-lg px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-semibold transition-all`}>
+                        <Icon className="w-4 h-4 mr-2" />
+                        {tab.label}
+                      </TabsTrigger>;
+              })}
+                </TabsList>
+
+                {/* Match Filters - only show when "All Seasons" is selected */}
+                {selectedSeasonId === 'all' && (
+                  <div className="flex flex-wrap items-center gap-4 mb-4">
+                    <RankingFilters 
+                      minMatches={minMatches} 
+                      minOvers={minOvers} 
+                      onMinMatchesChange={setMinMatches} 
+                      onMinOversChange={setMinOvers} 
+                      showOversFilter={activeTab === 'bowling'} 
+                    />
+                  </div>
+                )}
+
+                <TabsContent value="batting">
+                  <RankingsTable title="Batting Rankings" icon="🏏" category="batting" players={battingRankings} />
+                </TabsContent>
+
+                <TabsContent value="bowling">
+                  <RankingsTable title="Bowling Rankings" icon="🎯" category="bowling" players={bowlingRankings} />
+                </TabsContent>
+
+                <TabsContent value="fielding">
+                  <RankingsTable title="Fielding Rankings" icon="🧤" category="fielding" players={fieldingRankings} />
+                </TabsContent>
+
+                <TabsContent value="overall">
+                  <RankingsTable title="Overall Rankings" icon="👑" category="overall" players={overallRankings} />
+                </TabsContent>
+              </Tabs>
+            </motion.section>
+          </>}
+      </main>
+
+      <SiteFooter />
+    </div>;
+};
 export default Index;
