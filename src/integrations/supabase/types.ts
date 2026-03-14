@@ -91,6 +91,7 @@ export type Database = {
           created_at: string
           dot_balls: number
           fours_conceded: number
+          hat_tricks: number
           id: number
           maidens: number
           match_id: number
@@ -107,6 +108,7 @@ export type Database = {
           created_at?: string
           dot_balls?: number
           fours_conceded?: number
+          hat_tricks?: number
           id?: number
           maidens?: number
           match_id: number
@@ -123,6 +125,7 @@ export type Database = {
           created_at?: string
           dot_balls?: number
           fours_conceded?: number
+          hat_tricks?: number
           id?: number
           maidens?: number
           match_id?: number
