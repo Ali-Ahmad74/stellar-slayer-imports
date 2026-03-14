@@ -628,13 +628,48 @@ const PlayerProfile = () => {
               </Card>
             </motion.div>
 
-            {/* Achievements */}
+            {/* Achievements (with ranking milestones merged in) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
-              <PlayerAchievements stats={stats || {}} />
+              <PlayerAchievements stats={{
+                ...(stats || {}),
+                _rank_top5: rankHistory?.highestOverallRank !== null && rankHistory!.highestOverallRank <= 5 ? 1 : 0,
+                _rank_top3: rankHistory?.highestOverallRank !== null && rankHistory!.highestOverallRank <= 3 ? 1 : 0,
+                _rank_no1: rankHistory?.highestOverallRank !== null && rankHistory!.highestOverallRank <= 1 ? 1 : 0,
+                _rank_days_at_1: rankHistory?.daysAtNumber1 || 0,
+              }} rankHistory={rankHistory || undefined} />
+            </motion.div>
+
+            {/* Attendance Card */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }}>
+              <Card variant="elevated">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <ClipboardCheck className="w-5 h-5 text-primary" />
+                    Attendance Record
+                    <Badge variant="outline" className="ml-auto text-xs">Auto-calculated</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Matches Played</span>
+                    <span className="text-lg font-bold font-display">{attendance?.attended || 0} / {attendance?.totalMatches || 0}</span>
+                  </div>
+                  <Progress value={attendance?.percentage || 0} className="h-3" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Attendance Rate</span>
+                    <Badge variant={
+                      (attendance?.percentage || 0) >= 80 ? 'default' : 
+                      (attendance?.percentage || 0) >= 50 ? 'secondary' : 'destructive'
+                    } className="text-sm font-bold">
+                      {attendance?.percentage || 0}%
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Form Analysis */}
