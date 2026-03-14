@@ -23,18 +23,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Loader2 } from 'lucide-react';
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Loader2 } from 'lucide-react';
 
 const Compare = () => {
   const { players, loading, error } = usePlayerRankings();
