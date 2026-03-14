@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Calendar, Settings, Plus, Edit, Trash2, LogOut, Activity, CalendarDays, Trophy, Info, AlertCircle } from 'lucide-react';
+import { Users, Calendar, Settings, Plus, Edit, Trash2, LogOut, Activity, CalendarDays, Trophy, Info, AlertCircle, MessageSquare, ClipboardCheck } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
