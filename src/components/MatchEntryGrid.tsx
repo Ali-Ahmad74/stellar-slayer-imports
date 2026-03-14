@@ -1231,7 +1231,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                       <SelectItem value="out">Out</SelectItem>
                     </SelectContent>
                   </Select>
-                  {r.batting.status === "out" && (
+                  {r.batting.status === "out" ? (
                     <Select
                       value={r.batting.dismissal_type || ""}
                       onValueChange={(value: DismissalType) =>
@@ -1255,6 +1255,8 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                  ) : (
+                    <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
                   )}
 
                   {/* Bowling */}
