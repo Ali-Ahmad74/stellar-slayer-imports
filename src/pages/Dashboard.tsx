@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { Loader2, Trophy, Target, TrendingUp, Users, Calendar, Zap, Award, Activity, MapPin, Flame, ArrowUp, ArrowDown } from 'lucide-react';
 import { TeamAchievements } from '@/components/TeamAchievements';
+import { TeamRecords } from '@/components/TeamRecords';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line
@@ -501,7 +502,12 @@ const Dashboard = () => {
 
         {/* Team Achievements & Partnerships */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">
-          <TeamAchievements players={players.map(p => ({ id: p.id, name: p.name }))} />
+          <TeamAchievements players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))} />
+        </motion.div>
+
+        {/* Team Records */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mb-8">
+          <TeamRecords players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))} />
         </motion.div>
 
         {/* Team Composition & Milestones */}

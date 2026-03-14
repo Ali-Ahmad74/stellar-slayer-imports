@@ -12,12 +12,22 @@ import {
 import { Trophy, Award } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
+interface RankHistoryData {
+  highestOverallRank: number | null;
+  daysAtNumber1: number;
+  bestSeason: string | null;
+  highestBattingRank: number | null;
+  highestBowlingRank: number | null;
+  currentStreak: number;
+}
+
 interface PlayerAchievementsProps {
   stats: PlayerStats;
   compact?: boolean;
+  rankHistory?: RankHistoryData;
 }
 
-export function PlayerAchievements({ stats, compact = false }: PlayerAchievementsProps) {
+export function PlayerAchievements({ stats, compact = false, rankHistory }: PlayerAchievementsProps) {
   const unlocked = getUnlockedAchievements(stats);
   const upcoming = getNextAchievements(stats, 4);
 
@@ -48,6 +58,7 @@ export function PlayerAchievements({ stats, compact = false }: PlayerAchievement
     bowling: "🎯",
     fielding: "🧤",
     milestone: "🏅",
+    ranking: "📊",
   };
 
   const categoryLabels: Record<string, string> = {
@@ -55,6 +66,7 @@ export function PlayerAchievements({ stats, compact = false }: PlayerAchievement
     bowling: "Bowling Achievements",
     fielding: "Fielding Achievements",
     milestone: "Career Milestones",
+    ranking: "Ranking Milestones",
   };
 
   // Count by tier
