@@ -708,9 +708,10 @@ const Admin = () => {
                     <CardDescription>Add and manage your team's players</CardDescription>
                   </div>
                   {isAdmin && (
-                    <Button onClick={() => { setEditingPlayer(undefined); setPlayerDialogOpen(true); }}>
-                      <Plus className="w-4 h-4 mr-2" />Add Player
-                    </Button>
+                   <Button onClick={() => { setEditingPlayer(undefined); setPlayerDialogOpen(true); }}>
+                       <Plus className="w-4 h-4 mr-2" />Add Player
+                     </Button>
+                     {teamId && <CSVImportDialog teamId={teamId} onImportComplete={fetchData} />}
                   )}
                 </CardHeader>
                 <CardContent className="p-0">
