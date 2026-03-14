@@ -58,6 +58,7 @@ export function PlayerAchievements({ stats, compact = false, rankHistory }: Play
     bowling: "🎯",
     fielding: "🧤",
     milestone: "🏅",
+    ranking: "📊",
   };
 
   const categoryLabels: Record<string, string> = {
@@ -65,6 +66,7 @@ export function PlayerAchievements({ stats, compact = false, rankHistory }: Play
     bowling: "Bowling Achievements",
     fielding: "Fielding Achievements",
     milestone: "Career Milestones",
+    ranking: "Ranking Milestones",
   };
 
   // Count by tier
