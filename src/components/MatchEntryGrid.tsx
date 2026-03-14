@@ -1181,6 +1181,23 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                     </div>
                   </div>
 
+                  {/* Batting Position */}
+                  <Input
+                    inputMode="numeric"
+                    placeholder="#"
+                    value={r.batting.batting_position}
+                    onChange={(e) =>
+                      setRows((prev) => ({
+                        ...prev,
+                        [p.id]: {
+                          ...prev[p.id],
+                          batting: { ...prev[p.id].batting, batting_position: e.target.value },
+                        },
+                      }))
+                    }
+                    className="w-14 text-center"
+                  />
+
                   {/* Batting */}
                   {["runs", "balls", "fours", "sixes"].map((key, idx) => (
                     <Input
