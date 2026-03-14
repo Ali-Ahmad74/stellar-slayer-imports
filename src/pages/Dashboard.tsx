@@ -508,6 +508,7 @@ const Dashboard = () => {
         {/* Team Records */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mb-8">
           <TeamRecords players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))} />
+        </motion.div>
 
         {/* Team Composition & Milestones */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
