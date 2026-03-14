@@ -311,9 +311,15 @@ const PlayerProfile = () => {
                   <span className="text-white/80 text-sm">• {player.bowling_style}</span>
                 )}
               </div>
-              <p className="text-white/70">
+              <p className="text-white/70 mb-2">
                 {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
               </p>
+              {formStats.totalMatches >= 3 && (
+                <PlayerFormBadge 
+                  formTrend={formStats.formTrend} 
+                  consistency={formStats.consistency} 
+                />
+              )}
             </div>
           </div>
 
