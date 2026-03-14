@@ -27,7 +27,7 @@ interface PlayerAchievementsProps {
   rankHistory?: RankHistoryData;
 }
 
-export function PlayerAchievements({ stats, compact = false }: PlayerAchievementsProps) {
+export function PlayerAchievements({ stats, compact = false, rankHistory }: PlayerAchievementsProps) {
   const unlocked = getUnlockedAchievements(stats);
   const upcoming = getNextAchievements(stats, 4);
 
