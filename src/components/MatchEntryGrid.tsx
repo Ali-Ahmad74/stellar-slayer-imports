@@ -1256,6 +1256,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                       "no_balls",
                       "fours_conceded",
                       "sixes_conceded",
+                      "hat_tricks",
                     ] as const
                   ).map((key, i) => (
                     <Input
