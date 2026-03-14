@@ -114,6 +114,11 @@ const PlayerProfile = () => {
         setPlayer({
           ...playerData,
           role: playerData.role as PlayerRole,
+          date_of_birth: (playerData as any).date_of_birth || null,
+          debut_date: (playerData as any).debut_date || null,
+          jersey_number: (playerData as any).jersey_number || null,
+          nationality: (playerData as any).nationality || null,
+          bio: (playerData as any).bio || null,
         });
       }
       setPlayerLoading(false);
