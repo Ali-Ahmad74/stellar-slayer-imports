@@ -640,6 +640,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
             sixes: toInt(r.batting.sixes),
             out: r.batting.status === "out",
             dismissal_type: r.batting.status === "out" ? (r.batting.dismissal_type || null) : null,
+            batting_position: toInt(r.batting.batting_position) || null,
           },
           bowling: {
             balls: toInt(r.bowling.balls),
