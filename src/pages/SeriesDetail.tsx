@@ -587,7 +587,25 @@ export default function SeriesDetail() {
                           transition={{ duration: 0.25 }}
                           className="border-t"
                         >
-                          <MatchScorecard matchId={m.id} />
+                          <MatchScorecard 
+                            matchId={m.id}
+                            showExport={isAdmin}
+                            matchMeta={{
+                              date: new Date(m.match_date).toLocaleDateString(),
+                              opponent: m.opponent_name || '',
+                              venue: m.venue || '',
+                              ourScore: m.our_score,
+                              opponentScore: m.opponent_score,
+                              result: m.result || '',
+                              overs: m.overs,
+                              seriesName: series.name,
+                            }}
+                            exportOptions={{
+                              teamName: teamSettings?.team_name,
+                              logoUrl: teamSettings?.team_logo_url,
+                              watermarkHandle: teamSettings?.watermark_handle,
+                            }}
+                          />
                         </motion.div>
                       )}
                     </AnimatePresence>
