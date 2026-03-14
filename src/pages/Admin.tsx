@@ -826,7 +826,8 @@ const Admin = () => {
                               <TableCell>{match.overs}</TableCell>
                               {isAdmin && (
                                 <TableCell className="text-right">
-                                  <div className="flex justify-end gap-2">
+                                  <div className="flex justify-end gap-1">
+                                    <Button variant="ghost" size="icon" onClick={() => setNotesMatch(match)} title="Notes"><MessageSquare className="w-4 h-4" /></Button>
                                     <Button variant="ghost" size="icon" onClick={() => handleEditMatch(match)}><Edit className="w-4 h-4" /></Button>
                                     <Button variant="ghost" size="icon" onClick={() => handleDeleteClick('match', match.id, match.opponent_name || 'this match')}><Trash2 className="w-4 h-4 text-destructive" /></Button>
                                   </div>
