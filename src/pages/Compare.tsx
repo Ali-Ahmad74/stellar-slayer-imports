@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { GitCompare, X, Plus, Trophy } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -7,7 +7,22 @@ import { Button } from '@/components/ui/button';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { usePlayerRankings, PlayerWithStats } from '@/hooks/usePlayerRankings';
 import {
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip
+} from 'recharts';
+import {
   Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Loader2 } from 'lucide-react';
   CommandEmpty,
   CommandGroup,
   CommandInput,
