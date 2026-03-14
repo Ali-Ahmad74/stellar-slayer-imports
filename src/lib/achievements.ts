@@ -27,9 +27,12 @@ export const ACHIEVEMENTS: Achievement[] = [
   // Bowling milestones
   { id: "first_3fer", name: "Wicket Taker", description: "Take 3 wickets in an innings", icon: "🎳", category: "bowling", tier: "bronze", requirement: 1, stat: "three_fers" },
   { id: "first_5fer", name: "Five-for Fame", description: "Take 5 wickets in an innings", icon: "🔥", category: "bowling", tier: "gold", requirement: 1, stat: "five_fers" },
+  { id: "first_hatrick", name: "Hat-Trick Hero", description: "Take a hat-trick", icon: "🎩", category: "bowling", tier: "platinum", requirement: 1, stat: "hat_tricks" },
   { id: "wicket_hunter_25", name: "Wicket Hunter", description: "Take 25 career wickets", icon: "⚡", category: "bowling", tier: "silver", requirement: 25, stat: "wickets" },
   { id: "wicket_hunter_50", name: "Wicket Master", description: "Take 50 career wickets", icon: "🏆", category: "bowling", tier: "gold", requirement: 50, stat: "wickets" },
   { id: "maiden_master_5", name: "Maiden Master", description: "Bowl 5 maiden overs", icon: "🎯", category: "bowling", tier: "silver", requirement: 5, stat: "maidens" },
+  { id: "dot_ball_king_100", name: "Dot Ball King", description: "Bowl 100 dot balls", icon: "⏹️", category: "bowling", tier: "silver", requirement: 100, stat: "dot_balls" },
+  { id: "dot_ball_king_250", name: "Dot Ball Legend", description: "Bowl 250 dot balls", icon: "🛑", category: "bowling", tier: "gold", requirement: 250, stat: "dot_balls" },
 
   // Fielding milestones
   { id: "safe_hands_10", name: "Safe Hands", description: "Take 10 catches", icon: "🧤", category: "fielding", tier: "bronze", requirement: 10, stat: "catches" },
@@ -56,6 +59,8 @@ export interface PlayerStats {
   maidens?: number;
   three_fers?: number;
   five_fers?: number;
+  hat_tricks?: number;
+  dot_balls?: number;
   catches?: number;
   runouts?: number;
   stumpings?: number;
@@ -96,4 +101,11 @@ export const TIER_BG = {
   silver: "bg-slate-600/20 border-slate-400/50",
   gold: "bg-yellow-900/20 border-yellow-600/50",
   platinum: "bg-cyan-900/20 border-cyan-500/50",
+} as const;
+
+export const TIER_LABEL = {
+  bronze: "Bronze",
+  silver: "Silver",
+  gold: "Gold",
+  platinum: "Platinum",
 } as const;
