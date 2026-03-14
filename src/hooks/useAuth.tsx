@@ -36,7 +36,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [team, setTeam] = useState<Team | null>(null);
   const [teamLoading, setTeamLoading] = useState(false);
 
+  const claimAdminIfNone = async () => {
+    try {
+      await supabase.rpc('claim_admin_if_none');
+    } catch {}
+  };
+
   const checkAdminRole = async (userId: string) => {
+    // First try to claim admin if no admin exists
+    await claimAdminIfNone();
     const { data } = await supabase
       .from('user_roles')
       .select('role')
