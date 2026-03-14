@@ -12,6 +12,8 @@ import Players from "./pages/Players";
 import Stats from "./pages/Stats";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Leaderboard from "./pages/Leaderboard";
 import Compare from "./pages/Compare";
 import MatchHistory from "./pages/MatchHistory";
@@ -27,7 +29,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <ThemeProvider>
+      <ThemeProvider defaultTheme="dark" attribute="class" enableSystem disableTransitionOnChange>
         <TooltipProvider>
           <Toaster />
           <Sonner />
@@ -40,6 +42,8 @@ const App = () => (
               <Route path="/stats" element={<Stats />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/compare" element={<Compare />} />
               <Route path="/matches" element={<MatchHistory />} />

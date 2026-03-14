@@ -696,7 +696,7 @@ export type Database = {
           id: string
           logo_url: string | null
           name: string
-          owner_user_id: string
+          owner_user_id: string | null
           tagline: string | null
           updated_at: string
           watermark_enabled: boolean
@@ -709,7 +709,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name: string
-          owner_user_id: string
+          owner_user_id?: string | null
           tagline?: string | null
           updated_at?: string
           watermark_enabled?: boolean
@@ -722,7 +722,7 @@ export type Database = {
           id?: string
           logo_url?: string | null
           name?: string
-          owner_user_id?: string
+          owner_user_id?: string | null
           tagline?: string | null
           updated_at?: string
           watermark_enabled?: boolean
