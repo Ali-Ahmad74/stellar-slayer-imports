@@ -1213,6 +1213,16 @@ const Admin = () => {
       <TournamentDialog open={tournamentDialogOpen} onOpenChange={(open) => { setTournamentDialogOpen(open); if (!open) setEditingTournament(undefined); }} onSave={handleSaveTournament} tournament={editingTournament} saving={saving} />
       <DeleteConfirmDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen} onConfirm={handleConfirmDelete} title={`Delete ${deleteTarget?.type ? deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1) : ''}?`} description={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`} isLoading={saving} />
       <DeleteConfirmDialog open={deleteSampleDialogOpen} onOpenChange={setDeleteSampleDialogOpen} onConfirm={handleConfirmDeleteSampleData} title="Delete sample data?" description='This will remove all records prefixed with "(Sample)" and all related performance inputs. This action cannot be undone.' isLoading={saving} />
+      {notesMatch && (
+        <MatchNotesEditor
+          matchId={notesMatch.id}
+          matchLabel={`${new Date(notesMatch.match_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} vs ${notesMatch.opponent_name || 'Unknown'}`}
+          initialNotes={notesMatch.notes || null}
+          open={!!notesMatch}
+          onOpenChange={(open) => { if (!open) setNotesMatch(null); }}
+          onSaved={fetchData}
+        />
+      )}
     </div>
   );
 };
