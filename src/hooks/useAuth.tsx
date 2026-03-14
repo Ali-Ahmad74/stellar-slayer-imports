@@ -24,8 +24,6 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
-  createTeam: (teamName: string, description?: string) => Promise<{ teamId: string | null; error: Error | null }>;
-  refreshTeam: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,10 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .maybeSingle();
     setTeam(data ?? null);
     setTeamLoading(false);
-  };
-
-  const refreshTeam = async () => {
-    await fetchTeam();
   };
 
   useEffect(() => {
@@ -111,31 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error };
   };
 
-  const createTeam = async (teamName: string, description?: string) => {
-    try {
-      const { data, error } = await supabase.rpc('create_team_for_user', {
-        p_team_name: teamName,
-        p_description: description ?? null,
-      });
-      // If team already exists — fetch existing and return success
-      if (error) {
-        const msg = error.message ?? '';
-        const code = error.code ?? '';
-        if (msg.includes('already owns a team') || code === '23505' || code === 'P0001') {
-          await fetchTeam();
-          setIsAdmin(true);
-          return { teamId: null, error: null };
-        }
-      }
-      if (error) throw error;
-      await fetchTeam();
-      setIsAdmin(true);
-      return { teamId: data as string, error: null };
-    } catch (err) {
-      return { teamId: null, error: err as Error };
-    }
-  };
-
   const signOut = async () => {
     await supabase.auth.signOut();
     setIsAdmin(false);
@@ -146,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, session, isAdmin, loading,
       team, teamLoading,
-      signIn, signUp, signOut, createTeam, refreshTeam
+      signIn, signUp, signOut
     }}>
       {children}
     </AuthContext.Provider>
