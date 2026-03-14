@@ -254,7 +254,26 @@ const PlayerProfile = () => {
     }
   };
 
-  return (
+  // Handle PNG export - capture the profile section as image
+  const handleExportPNG = async () => {
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const profileEl = document.querySelector('.gradient-header')?.parentElement;
+      if (!profileEl) return;
+      const canvas = await html2canvas(profileEl as HTMLElement, { 
+        backgroundColor: null, 
+        scale: 2,
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = `${player?.name || 'player'}-stats.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('PNG export failed:', err);
+    }
+  };
+
     <div className="min-h-screen bg-background">
       <Header />
       
