@@ -290,6 +290,15 @@ const PlayerProfile = () => {
           </div>
         </div>
 
+        {/* Social Share */}
+        <div className="mb-6">
+          <SocialShareButtons 
+            playerName={player.name} 
+            stats={stats} 
+            teamName={teamSettings?.team_name} 
+          />
+        </div>
+
         {/* Player Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
