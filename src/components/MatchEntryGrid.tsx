@@ -108,7 +108,7 @@ type DraftRow = {
 function emptyDraftRow(): DraftRow {
   return {
     include: false,
-    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null },
+    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null, batting_position: "" },
     bowling: {
       balls: "0",
       runs_conceded: "0",
