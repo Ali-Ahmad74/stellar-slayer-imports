@@ -7,14 +7,15 @@ interface RankHistory {
   bestSeason: string | null;
   highestBattingRank: number | null;
   highestBowlingRank: number | null;
-  currentStreak: number; // consecutive days at #1
+  highestFieldingRank: number | null;
+  currentStreak: number;
 }
 
 export function usePlayerRankHistory(playerId: number | null | undefined) {
   return useQuery({
     queryKey: ["player-rank-history", playerId],
     queryFn: async (): Promise<RankHistory> => {
-      if (!playerId) return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, currentStreak: 0 };
+      if (!playerId) return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, highestFieldingRank: null, currentStreak: 0 };
 
       const { data: snapshots } = await supabase
         .from("rank_snapshots")
@@ -23,12 +24,13 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         .order("snapshot_date", { ascending: true });
 
       if (!snapshots || snapshots.length === 0) {
-        return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, currentStreak: 0 };
+        return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, highestFieldingRank: null, currentStreak: 0 };
       }
 
       let highestOverallRank = Infinity;
       let highestBattingRank = Infinity;
       let highestBowlingRank = Infinity;
+      let highestFieldingRank = Infinity;
       let daysAtNumber1 = 0;
       let bestSeasonName: string | null = null;
       let bestSeasonRank = Infinity;
@@ -50,6 +52,9 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         if (snap.bowling_rank && snap.bowling_rank < highestBowlingRank) {
           highestBowlingRank = snap.bowling_rank;
         }
+        if (snap.fielding_rank && snap.fielding_rank < highestFieldingRank) {
+          highestFieldingRank = snap.fielding_rank;
+        }
         if (snap.overall_rank === 1) daysAtNumber1++;
         
         // Find best season (lowest rank)
@@ -66,6 +71,7 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         bestSeason: bestSeasonName,
         highestBattingRank: highestBattingRank === Infinity ? null : highestBattingRank,
         highestBowlingRank: highestBowlingRank === Infinity ? null : highestBowlingRank,
+        highestFieldingRank: highestFieldingRank === Infinity ? null : highestFieldingRank,
         currentStreak,
       };
     },
