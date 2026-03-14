@@ -335,34 +335,40 @@ const PlayerProfile = () => {
             </div>
           </div>
 
-          {/* ICC Points Cards in Header */}
+          {/* Rank Cards in Header */}
           {statsLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-white/70" />
               <span className="ml-2 text-white/70">Loading stats...</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { icon: '🏏', label: 'Batting', value: iccPoints.battingPoints, color: 'bg-emerald-500/20' },
-                { icon: '🎯', label: 'Bowling', value: iccPoints.bowlingPoints, color: 'bg-red-500/20' },
-                { icon: '🧤', label: 'Fielding', value: iccPoints.fieldingPoints, color: 'bg-blue-500/20' },
-                { icon: '👑', label: 'Total', value: iccPoints.totalPoints, color: 'bg-yellow-500/20' },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 * index }}
-                  className={`${item.color} backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center`}
-                >
-                  <span className="text-xl sm:text-2xl mb-1 block">{item.icon}</span>
-                  <p className="text-2xl sm:text-3xl font-bold font-display">{item.value}</p>
-                  <p className="text-xs sm:text-sm text-white/70">{item.label} Points</p>
-                </motion.div>
-              ))}
-            </div>
-          )}
+          ) : (() => {
+            const batRank = getBattingRankings().find(p => p.id === playerId)?.rank;
+            const bowlRank = getBowlingRankings().find(p => p.id === playerId)?.rank;
+            const fieldRank = getFieldingRankings().find(p => p.id === playerId)?.rank;
+            const overallRank = getOverallRankings().find(p => p.id === playerId)?.rank;
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { icon: '🏏', label: 'Batting Rank', value: batRank ? `#${batRank}` : '—', color: 'bg-emerald-500/20' },
+                  { icon: '🎯', label: 'Bowling Rank', value: bowlRank ? `#${bowlRank}` : '—', color: 'bg-red-500/20' },
+                  { icon: '🧤', label: 'Fielding Rank', value: fieldRank ? `#${fieldRank}` : '—', color: 'bg-blue-500/20' },
+                  { icon: '👑', label: 'Overall Rank', value: overallRank ? `#${overallRank}` : '—', color: 'bg-yellow-500/20' },
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    className={`${item.color} backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center`}
+                  >
+                    <span className="text-xl sm:text-2xl mb-1 block">{item.icon}</span>
+                    <p className="text-2xl sm:text-3xl font-bold font-display">{item.value}</p>
+                    <p className="text-xs sm:text-sm text-white/70">{item.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            );
+          })()}
         </motion.div>
 
         {/* Empty State */}
