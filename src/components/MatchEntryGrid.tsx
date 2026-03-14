@@ -100,6 +100,7 @@ type DraftRow = {
     fours_conceded: string;
     sixes_conceded: string;
     dot_balls: string;
+    hat_tricks: string;
   };
   fielding: { catches: string; runouts: string; stumpings: string; dropped_catches: string };
 };
