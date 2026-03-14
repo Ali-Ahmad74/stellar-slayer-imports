@@ -516,7 +516,7 @@ const MatchHistory = () => {
                     </div>
                   </div>
 
-                  {/* Expanded Scorecard */}
+                   {/* Expanded Scorecard */}
                   <AnimatePresence>
                     {expandedMatchId === match.id && (
                       <motion.div
@@ -526,7 +526,25 @@ const MatchHistory = () => {
                         transition={{ duration: 0.3 }}
                         className="border-t"
                       >
-                        <MatchScorecard matchId={match.id} />
+                        <MatchScorecard 
+                          matchId={match.id} 
+                          showExport={isAdmin}
+                          matchMeta={{
+                            date: new Date(match.match_date).toLocaleDateString(),
+                            opponent: match.opponent_name || '',
+                            venue: match.venue || '',
+                            ourScore: match.our_score,
+                            opponentScore: match.opponent_score,
+                            result: match.result || '',
+                            overs: match.overs,
+                            seriesName: match.series?.name,
+                          }}
+                          exportOptions={{
+                            teamName: teamSettings?.team_name,
+                            logoUrl: teamSettings?.team_logo_url,
+                            watermarkHandle: teamSettings?.watermark_handle,
+                          }}
+                        />
                       </motion.div>
                     )}
                   </AnimatePresence>
