@@ -7,7 +7,8 @@ interface RankHistory {
   bestSeason: string | null;
   highestBattingRank: number | null;
   highestBowlingRank: number | null;
-  currentStreak: number; // consecutive days at #1
+  highestFieldingRank: number | null;
+  currentStreak: number;
 }
 
 export function usePlayerRankHistory(playerId: number | null | undefined) {

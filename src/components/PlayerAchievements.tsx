@@ -18,6 +18,7 @@ interface RankHistoryData {
   bestSeason: string | null;
   highestBattingRank: number | null;
   highestBowlingRank: number | null;
+  highestFieldingRank: number | null;
   currentStreak: number;
 }
 
