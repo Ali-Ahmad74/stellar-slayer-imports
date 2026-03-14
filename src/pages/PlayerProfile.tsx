@@ -1,10 +1,12 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Calendar, Download, Image } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Download, Image, ClipboardCheck, Crown, Trophy, Cake, Hash, Globe, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { RoleBadge } from '@/components/RoleBadge';
 import { PlayerAchievements } from '@/components/PlayerAchievements';
@@ -21,6 +23,8 @@ import { calculateICCPoints, PlayerStats as PlayerStatsType, usePlayerRankings }
 import { usePlayerSeasons } from '@/hooks/usePlayerSeasons';
 import { usePlayerStatsBySeason } from '@/hooks/usePlayerStatsBySeason';
 import { useFormAnalysis } from '@/hooks/useFormAnalysis';
+import { usePlayerAttendance } from '@/hooks/usePlayerAttendance';
+import { usePlayerRankHistory } from '@/hooks/usePlayerRankHistory';
 import type { PlayerRole } from '@/types/cricket';
 import { useScoringSettings } from '@/hooks/useScoringSettings';
 import { useTeamSettings } from '@/hooks/useTeamSettings';
@@ -36,6 +40,11 @@ interface Player {
   photo_url: string | null;
   batting_style: string | null;
   bowling_style: string | null;
+  date_of_birth: string | null;
+  debut_date: string | null;
+  jersey_number: number | null;
+  nationality: string | null;
+  bio: string | null;
 }
 
 const PlayerProfile = () => {
