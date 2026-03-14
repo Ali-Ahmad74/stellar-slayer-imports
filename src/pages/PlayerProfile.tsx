@@ -359,10 +359,17 @@ const PlayerProfile = () => {
         >
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
             <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="xl" />
-            <div className="text-center md:text-left">
-              <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">
-                {player.name}
-              </h1>
+            <div className="text-center md:text-left flex-1">
+              <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                <h1 className="font-display text-4xl md:text-5xl font-bold">
+                  {player.name}
+                </h1>
+                {player.jersey_number && (
+                  <span className="bg-white/20 backdrop-blur-sm text-white font-display text-2xl font-bold px-3 py-1 rounded-xl">
+                    #{player.jersey_number}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
                 <RoleBadge role={player.role} />
                 {player.batting_style && (
@@ -371,10 +378,39 @@ const PlayerProfile = () => {
                 {player.bowling_style && (
                   <span className="text-white/80 text-sm">• {player.bowling_style}</span>
                 )}
+                {player.nationality && (
+                  <span className="text-white/80 text-sm flex items-center gap-1"><Globe className="w-3 h-3" />{player.nationality}</span>
+                )}
               </div>
-              <p className="text-white/70 mb-2">
-                {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
-              </p>
+              
+              {/* Bio info line */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/70 text-sm mb-2">
+                <span>{stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}</span>
+                {player.date_of_birth && (() => {
+                  const today = new Date();
+                  const birth = new Date(player.date_of_birth!);
+                  let age = today.getFullYear() - birth.getFullYear();
+                  const m = today.getMonth() - birth.getMonth();
+                  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+                  return (
+                    <span className="flex items-center gap-1">
+                      <Cake className="w-3 h-3" />
+                      {age} years ({new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                    </span>
+                  );
+                })()}
+                {player.debut_date && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    Debut: {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+              
+              {player.bio && (
+                <p className="text-white/60 text-sm italic max-w-lg">{player.bio}</p>
+              )}
+              
               {formStats.totalMatches >= 3 && (
                 <PlayerFormBadge 
                   formTrend={formStats.formTrend} 
