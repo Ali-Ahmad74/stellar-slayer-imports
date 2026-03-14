@@ -1134,6 +1134,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                 <div>4s</div>
                 <div>6s</div>
                 <div>Status</div>
+                <div>Dismissal</div>
                 <div>Bowl balls</div>
                 <div>Runs conc</div>
                 <div>Wkts</div>
