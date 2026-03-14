@@ -24,6 +24,8 @@ import {
 } from '@/components/ui/popover';
 import { Loader2 } from 'lucide-react';
 
+const RADAR_COLORS = ['hsl(var(--primary))', 'hsl(0, 84%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)'];
+
 const Compare = () => {
   const { players, loading, error } = usePlayerRankings();
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
