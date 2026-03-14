@@ -30,6 +30,7 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
       let highestOverallRank = Infinity;
       let highestBattingRank = Infinity;
       let highestBowlingRank = Infinity;
+      let highestFieldingRank = Infinity;
       let daysAtNumber1 = 0;
       let bestSeasonName: string | null = null;
       let bestSeasonRank = Infinity;
