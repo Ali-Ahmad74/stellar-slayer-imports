@@ -381,9 +381,13 @@ const PlayerProfile = () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-white/70 text-sm mb-3">
+              {/* Player Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm text-white/70 mb-3 max-w-lg mx-auto md:mx-0">
                 {player.nationality && (
-                  <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" />{player.nationality}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-white/50" />
+                    <span>{player.nationality}</span>
+                  </div>
                 )}
                 {player.date_of_birth && (() => {
                   const today = new Date();
@@ -392,23 +396,35 @@ const PlayerProfile = () => {
                   const m = today.getMonth() - birth.getMonth();
                   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
                   return (
-                    <span className="flex items-center gap-1">
-                      <Cake className="w-3.5 h-3.5" />
-                      Age {age} • Born {new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Cake className="w-3.5 h-3.5 text-white/50" />
+                      <span>{age} yrs</span>
+                    </div>
                   );
                 })()}
+                {player.date_of_birth && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-white/50" />
+                    <span>{new Date(player.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                )}
                 {player.debut_date && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    Debut {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-white/50" />
+                    <span>Debut {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <Hash className="w-3.5 h-3.5 text-white/50" />
+                  <span>{stats?.matches || 0} Matches</span>
+                </div>
+                {player.jersey_number && (
+                  <div className="flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5 text-white/50" />
+                    <span>Jersey #{player.jersey_number}</span>
+                  </div>
                 )}
               </div>
-
-              <p className="text-white/60 text-sm mb-2">
-                {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
-              </p>
               
               {player.bio && (
                 <p className="text-white/50 text-xs italic max-w-md mx-auto">{player.bio}</p>
