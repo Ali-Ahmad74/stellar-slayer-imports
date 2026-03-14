@@ -1,10 +1,12 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Calendar, Download, Image } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Download, Image, ClipboardCheck, Crown, Trophy, Cake, Hash, Globe, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { RoleBadge } from '@/components/RoleBadge';
 import { PlayerAchievements } from '@/components/PlayerAchievements';
@@ -21,6 +23,8 @@ import { calculateICCPoints, PlayerStats as PlayerStatsType, usePlayerRankings }
 import { usePlayerSeasons } from '@/hooks/usePlayerSeasons';
 import { usePlayerStatsBySeason } from '@/hooks/usePlayerStatsBySeason';
 import { useFormAnalysis } from '@/hooks/useFormAnalysis';
+import { usePlayerAttendance } from '@/hooks/usePlayerAttendance';
+import { usePlayerRankHistory } from '@/hooks/usePlayerRankHistory';
 import type { PlayerRole } from '@/types/cricket';
 import { useScoringSettings } from '@/hooks/useScoringSettings';
 import { useTeamSettings } from '@/hooks/useTeamSettings';
@@ -36,6 +40,11 @@ interface Player {
   photo_url: string | null;
   batting_style: string | null;
   bowling_style: string | null;
+  date_of_birth: string | null;
+  debut_date: string | null;
+  jersey_number: number | null;
+  nationality: string | null;
+  bio: string | null;
 }
 
 const PlayerProfile = () => {
@@ -60,6 +69,10 @@ const PlayerProfile = () => {
   const { getBattingRankings, getBowlingRankings, getFieldingRankings, getOverallRankings } = usePlayerRankings();
 
   const playerId = id ? Number(id) : null;
+
+  // Attendance & rank history hooks
+  const { data: attendance } = usePlayerAttendance(playerId);
+  const { data: rankHistory } = usePlayerRankHistory(playerId);
   
   // Fetch available seasons for this player
   const { 
@@ -101,6 +114,11 @@ const PlayerProfile = () => {
         setPlayer({
           ...playerData,
           role: playerData.role as PlayerRole,
+          date_of_birth: (playerData as any).date_of_birth || null,
+          debut_date: (playerData as any).debut_date || null,
+          jersey_number: (playerData as any).jersey_number || null,
+          nationality: (playerData as any).nationality || null,
+          bio: (playerData as any).bio || null,
         });
       }
       setPlayerLoading(false);
@@ -341,10 +359,17 @@ const PlayerProfile = () => {
         >
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
             <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="xl" />
-            <div className="text-center md:text-left">
-              <h1 className="font-display text-4xl md:text-5xl font-bold mb-2">
-                {player.name}
-              </h1>
+            <div className="text-center md:text-left flex-1">
+              <div className="flex items-center gap-3 justify-center md:justify-start mb-2">
+                <h1 className="font-display text-4xl md:text-5xl font-bold">
+                  {player.name}
+                </h1>
+                {player.jersey_number && (
+                  <span className="bg-white/20 backdrop-blur-sm text-white font-display text-2xl font-bold px-3 py-1 rounded-xl">
+                    #{player.jersey_number}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-3">
                 <RoleBadge role={player.role} />
                 {player.batting_style && (
@@ -353,10 +378,39 @@ const PlayerProfile = () => {
                 {player.bowling_style && (
                   <span className="text-white/80 text-sm">• {player.bowling_style}</span>
                 )}
+                {player.nationality && (
+                  <span className="text-white/80 text-sm flex items-center gap-1"><Globe className="w-3 h-3" />{player.nationality}</span>
+                )}
               </div>
-              <p className="text-white/70 mb-2">
-                {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
-              </p>
+              
+              {/* Bio info line */}
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/70 text-sm mb-2">
+                <span>{stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}</span>
+                {player.date_of_birth && (() => {
+                  const today = new Date();
+                  const birth = new Date(player.date_of_birth!);
+                  let age = today.getFullYear() - birth.getFullYear();
+                  const m = today.getMonth() - birth.getMonth();
+                  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+                  return (
+                    <span className="flex items-center gap-1">
+                      <Cake className="w-3 h-3" />
+                      {age} years ({new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                    </span>
+                  );
+                })()}
+                {player.debut_date && (
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    Debut: {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+              </div>
+              
+              {player.bio && (
+                <p className="text-white/60 text-sm italic max-w-lg">{player.bio}</p>
+              )}
+              
               {formStats.totalMatches >= 3 && (
                 <PlayerFormBadge 
                   formTrend={formStats.formTrend} 
@@ -402,7 +456,98 @@ const PlayerProfile = () => {
           })()}
         </motion.div>
 
-        {/* Empty State */}
+        {/* Attendance & Rank History Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {/* Attendance Card */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+            <Card variant="elevated">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <ClipboardCheck className="w-5 h-5 text-primary" />
+                  Attendance Record
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Matches Attended</span>
+                  <span className="text-lg font-bold font-display">{attendance?.attended || 0} / {attendance?.totalMatches || 0}</span>
+                </div>
+                <Progress value={attendance?.percentage || 0} className="h-3" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Attendance Rate</span>
+                  <Badge variant={
+                    (attendance?.percentage || 0) >= 80 ? 'default' : 
+                    (attendance?.percentage || 0) >= 50 ? 'secondary' : 'destructive'
+                  } className="text-sm font-bold">
+                    {attendance?.percentage || 0}%
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Rank History Card */}
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+            <Card variant="elevated">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Crown className="w-5 h-5 text-amber-500" />
+                  Ranking Milestones
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {rankHistory && rankHistory.highestOverallRank !== null ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-amber-500" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold">Highest Rank: #{rankHistory.highestOverallRank}</p>
+                        {rankHistory.bestSeason && (
+                          <p className="text-xs text-muted-foreground">in {rankHistory.bestSeason}</p>
+                        )}
+                      </div>
+                    </div>
+                    {rankHistory.daysAtNumber1 > 0 && (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
+                        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                          <Crown className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-bold">{rankHistory.daysAtNumber1} Days at #1</p>
+                          {rankHistory.currentStreak > 0 && (
+                            <p className="text-xs text-muted-foreground">🔥 Current streak: {rankHistory.currentStreak} days</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2">
+                      {rankHistory.highestBattingRank && (
+                        <div className="text-center p-2 bg-muted/50 rounded-lg">
+                          <p className="text-lg font-bold font-display text-primary">#{rankHistory.highestBattingRank}</p>
+                          <p className="text-[10px] text-muted-foreground">Best Batting</p>
+                        </div>
+                      )}
+                      {rankHistory.highestBowlingRank && (
+                        <div className="text-center p-2 bg-muted/50 rounded-lg">
+                          <p className="text-lg font-bold font-display text-primary">#{rankHistory.highestBowlingRank}</p>
+                          <p className="text-[10px] text-muted-foreground">Best Bowling</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Crown className="w-10 h-10 mx-auto mb-2 text-muted-foreground/30" />
+                    <p className="text-sm text-muted-foreground">No rank history recorded yet</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
         {!hasStats && !statsLoading && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

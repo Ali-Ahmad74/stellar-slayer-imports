@@ -486,30 +486,45 @@ export type Database = {
       players: {
         Row: {
           batting_style: string | null
+          bio: string | null
           bowling_style: string | null
           created_at: string
+          date_of_birth: string | null
+          debut_date: string | null
           id: number
+          jersey_number: number | null
           name: string
+          nationality: string | null
           photo_url: string | null
           role: string
           team_id: string
         }
         Insert: {
           batting_style?: string | null
+          bio?: string | null
           bowling_style?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          debut_date?: string | null
           id?: number
+          jersey_number?: number | null
           name: string
+          nationality?: string | null
           photo_url?: string | null
           role?: string
           team_id: string
         }
         Update: {
           batting_style?: string | null
+          bio?: string | null
           bowling_style?: string | null
           created_at?: string
+          date_of_birth?: string | null
+          debut_date?: string | null
           id?: number
+          jersey_number?: number | null
           name?: string
+          nationality?: string | null
           photo_url?: string | null
           role?: string
           team_id?: string
@@ -568,6 +583,64 @@ export type Database = {
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rank_snapshots: {
+        Row: {
+          batting_rank: number | null
+          bowling_rank: number | null
+          created_at: string
+          fielding_rank: number | null
+          id: number
+          overall_rank: number
+          player_id: number
+          season_id: number | null
+          snapshot_date: string
+        }
+        Insert: {
+          batting_rank?: number | null
+          bowling_rank?: number | null
+          created_at?: string
+          fielding_rank?: number | null
+          id?: number
+          overall_rank: number
+          player_id: number
+          season_id?: number | null
+          snapshot_date?: string
+        }
+        Update: {
+          batting_rank?: number | null
+          bowling_rank?: number | null
+          created_at?: string
+          fielding_rank?: number | null
+          id?: number
+          overall_rank?: number
+          player_id?: number
+          season_id?: number | null
+          snapshot_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rank_snapshots_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "player_stats"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "rank_snapshots_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rank_snapshots_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
             referencedColumns: ["id"]
           },
         ]
