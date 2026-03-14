@@ -1137,6 +1137,14 @@ const Admin = () => {
               </Card>
             </TabsContent>
 
+            {/* ATTENDANCE */}
+            <TabsContent value="attendance">
+              <AttendanceManager
+                players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))}
+                matches={matches.map(m => ({ id: m.id, match_date: m.match_date, opponent_name: m.opponent_name, venue: m.venue }))}
+              />
+            </TabsContent>
+
             {/* TEAM SETTINGS */}
             <TabsContent value="team">
               <Card>
