@@ -1119,18 +1119,11 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
           </Collapsible>
         )}
 
-        <ScrollArea
+        <div
           ref={scrollAreaRef}
-          className="h-[520px] rounded-lg border border-border overscroll-contain"
+          className="h-[520px] rounded-lg border border-border overflow-auto overscroll-contain touch-pan-x touch-pan-y"
+          style={{ WebkitOverflowScrolling: 'touch' }}
           onPaste={handlePaste}
-          onWheelCapture={(e) => {
-            // Prevent the parent page from scrolling while using the grid.
-            e.stopPropagation();
-          }}
-          onTouchMoveCapture={(e) => {
-            // Same for touch scrolling on mobile.
-            e.stopPropagation();
-          }}
         >
           <div className="min-w-[1400px]">
             <div className="sticky top-0 z-20 bg-background border-b border-border">
