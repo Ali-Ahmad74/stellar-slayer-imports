@@ -1321,7 +1321,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
               );
             })}
           </div>
-        </ScrollArea>
+        </div>
         </CardContent>
       </Card>
 
