@@ -741,8 +741,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
 
     // Horizontal auto-scroll within the scroll-area viewport (avoid scrolling the whole page)
     requestAnimationFrame(() => {
-      const root = scrollAreaRef.current;
-      const viewport = root?.querySelector<HTMLElement>("[data-radix-scroll-area-viewport]");
+      const viewport = scrollAreaRef.current;
       if (!viewport) return;
 
       const cellRect = el.getBoundingClientRect();
