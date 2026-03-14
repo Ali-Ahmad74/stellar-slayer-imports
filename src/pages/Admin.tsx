@@ -18,6 +18,9 @@ import { TournamentDialog, TournamentFormData } from '@/components/dialogs/Tourn
 import { SeriesDialog, SeriesFormData } from '@/components/dialogs/SeriesDialog';
 import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { DataHealthDashboard } from '@/components/DataHealthDashboard';
+import { CSVImportDialog } from '@/components/CSVImportDialog';
+import { MatchNotesEditor } from '@/components/MatchNotesEditor';
+import { AttendanceManager } from '@/components/AttendanceManager';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
