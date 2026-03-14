@@ -24,7 +24,7 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
         .order("snapshot_date", { ascending: true });
 
       if (!snapshots || snapshots.length === 0) {
-        return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, currentStreak: 0 };
+        return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, highestFieldingRank: null, currentStreak: 0 };
       }
 
       let highestOverallRank = Infinity;
