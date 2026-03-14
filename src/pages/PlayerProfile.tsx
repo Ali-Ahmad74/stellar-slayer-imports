@@ -69,6 +69,10 @@ const PlayerProfile = () => {
   const { getBattingRankings, getBowlingRankings, getFieldingRankings, getOverallRankings } = usePlayerRankings();
 
   const playerId = id ? Number(id) : null;
+
+  // Attendance & rank history hooks
+  const { data: attendance } = usePlayerAttendance(playerId);
+  const { data: rankHistory } = usePlayerRankHistory(playerId);
   
   // Fetch available seasons for this player
   const { 
