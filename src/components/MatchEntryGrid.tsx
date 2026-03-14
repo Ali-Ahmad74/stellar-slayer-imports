@@ -191,10 +191,11 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
     if (colIdx === 11) return { category: "bowling", field: "no_balls" };
     if (colIdx === 12) return { category: "bowling", field: "fours_conceded" };
     if (colIdx === 13) return { category: "bowling", field: "sixes_conceded" };
-    if (colIdx === 14) return { category: "fielding", field: "catches" };
-    if (colIdx === 15) return { category: "fielding", field: "runouts" };
-    if (colIdx === 16) return { category: "fielding", field: "stumpings" };
-    if (colIdx === 17) return { category: "fielding", field: "dropped_catches" };
+    if (colIdx === 14) return { category: "bowling", field: "hat_tricks" };
+    if (colIdx === 15) return { category: "fielding", field: "catches" };
+    if (colIdx === 16) return { category: "fielding", field: "runouts" };
+    if (colIdx === 17) return { category: "fielding", field: "stumpings" };
+    if (colIdx === 18) return { category: "fielding", field: "dropped_catches" };
     return null;
   };
 
