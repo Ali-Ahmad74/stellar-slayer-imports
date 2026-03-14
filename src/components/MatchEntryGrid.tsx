@@ -61,6 +61,7 @@ const rowSchema = z.object({
       fours_conceded: int0,
       sixes_conceded: int0,
       dot_balls: int0,
+      hat_tricks: int0,
     })
     .optional(),
   fielding: z
@@ -99,6 +100,7 @@ type DraftRow = {
     fours_conceded: string;
     sixes_conceded: string;
     dot_balls: string;
+    hat_tricks: string;
   };
   fielding: { catches: string; runouts: string; stumpings: string; dropped_catches: string };
 };
@@ -117,6 +119,7 @@ function emptyDraftRow(): DraftRow {
       fours_conceded: "0",
       sixes_conceded: "0",
       dot_balls: "0",
+      hat_tricks: "0",
     },
     fielding: { catches: "0", runouts: "0", stumpings: "0", dropped_catches: "0" },
   };
@@ -188,10 +191,11 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
     if (colIdx === 11) return { category: "bowling", field: "no_balls" };
     if (colIdx === 12) return { category: "bowling", field: "fours_conceded" };
     if (colIdx === 13) return { category: "bowling", field: "sixes_conceded" };
-    if (colIdx === 14) return { category: "fielding", field: "catches" };
-    if (colIdx === 15) return { category: "fielding", field: "runouts" };
-    if (colIdx === 16) return { category: "fielding", field: "stumpings" };
-    if (colIdx === 17) return { category: "fielding", field: "dropped_catches" };
+    if (colIdx === 14) return { category: "bowling", field: "hat_tricks" };
+    if (colIdx === 15) return { category: "fielding", field: "catches" };
+    if (colIdx === 16) return { category: "fielding", field: "runouts" };
+    if (colIdx === 17) return { category: "fielding", field: "stumpings" };
+    if (colIdx === 18) return { category: "fielding", field: "dropped_catches" };
     return null;
   };
 
@@ -647,6 +651,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
             fours_conceded: toInt(r.bowling.fours_conceded),
             sixes_conceded: toInt(r.bowling.sixes_conceded),
             dot_balls: toInt(r.bowling.dot_balls),
+            hat_tricks: toInt(r.bowling.hat_tricks),
           },
           fielding: {
             catches: toInt(r.fielding.catches),
@@ -714,6 +719,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
         { group: "bowling", key: "no_balls" as const },
         { group: "bowling", key: "fours_conceded" as const },
         { group: "bowling", key: "sixes_conceded" as const },
+        { group: "bowling", key: "hat_tricks" as const },
         { group: "fielding", key: "catches" as const },
         { group: "fielding", key: "runouts" as const },
         { group: "fielding", key: "stumpings" as const },
@@ -1250,6 +1256,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                       "no_balls",
                       "fours_conceded",
                       "sixes_conceded",
+                      "hat_tricks",
                     ] as const
                   ).map((key, i) => (
                     <Input

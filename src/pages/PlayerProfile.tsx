@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Loader2, Calendar, Download } from 'lucide-react';
+import { ArrowLeft, Loader2, Calendar, Download, Image } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { PlayerFormBadge } from '@/components/PlayerFormBadge';
 import { PlayerMatchLog } from '@/components/PlayerMatchLog';
 import { SocialShareButtons } from '@/components/SocialShareButtons';
 import { supabase } from '@/integrations/supabase/client';
-import { calculateICCPoints, PlayerStats as PlayerStatsType } from '@/hooks/usePlayerRankings';
+import { calculateICCPoints, PlayerStats as PlayerStatsType, usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { usePlayerSeasons } from '@/hooks/usePlayerSeasons';
 import { usePlayerStatsBySeason } from '@/hooks/usePlayerStatsBySeason';
 import { useFormAnalysis } from '@/hooks/useFormAnalysis';
@@ -55,6 +55,9 @@ const PlayerProfile = () => {
   const { teamSettings } = useTeamSettings();
   const { isAdmin } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
+
+  // Get rankings for rank display
+  const { getBattingRankings, getBowlingRankings, getFieldingRankings, getOverallRankings } = usePlayerRankings();
 
   const playerId = id ? Number(id) : null;
   
@@ -251,6 +254,26 @@ const PlayerProfile = () => {
     }
   };
 
+  // Handle PNG export - capture the profile section as image
+  const handleExportPNG = async () => {
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const profileEl = document.querySelector('.gradient-header')?.parentElement;
+      if (!profileEl) return;
+      const canvas = await html2canvas(profileEl as HTMLElement, { 
+        backgroundColor: null, 
+        scale: 2,
+        useCORS: true,
+      });
+      const link = document.createElement('a');
+      link.download = `${player?.name || 'player'}-stats.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('PNG export failed:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -277,15 +300,26 @@ const PlayerProfile = () => {
               Share Player Card
             </Button>
             {isAdmin && (
-              <Button 
-                onClick={handleExportPDF} 
-                variant="outline" 
-                className="whitespace-nowrap gap-2"
-                disabled={!hasStats}
-              >
-                <Download className="w-4 h-4" />
-                Export PDF
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleExportPDF} 
+                  variant="outline" 
+                  className="whitespace-nowrap gap-2"
+                  disabled={!hasStats}
+                >
+                  <Download className="w-4 h-4" />
+                  PDF
+                </Button>
+                <Button
+                  onClick={handleExportPNG}
+                  variant="outline"
+                  className="whitespace-nowrap gap-2"
+                  disabled={!hasStats}
+                >
+                  <Image className="w-4 h-4" />
+                  PNG
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -332,34 +366,40 @@ const PlayerProfile = () => {
             </div>
           </div>
 
-          {/* ICC Points Cards in Header */}
+          {/* Rank Cards in Header */}
           {statsLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-white/70" />
               <span className="ml-2 text-white/70">Loading stats...</span>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { icon: '🏏', label: 'Batting', value: iccPoints.battingPoints, color: 'bg-emerald-500/20' },
-                { icon: '🎯', label: 'Bowling', value: iccPoints.bowlingPoints, color: 'bg-red-500/20' },
-                { icon: '🧤', label: 'Fielding', value: iccPoints.fieldingPoints, color: 'bg-blue-500/20' },
-                { icon: '👑', label: 'Total', value: iccPoints.totalPoints, color: 'bg-yellow-500/20' },
-              ].map((item, index) => (
-                <motion.div
-                  key={item.label}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 * index }}
-                  className={`${item.color} backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center`}
-                >
-                  <span className="text-xl sm:text-2xl mb-1 block">{item.icon}</span>
-                  <p className="text-2xl sm:text-3xl font-bold font-display">{item.value}</p>
-                  <p className="text-xs sm:text-sm text-white/70">{item.label} Points</p>
-                </motion.div>
-              ))}
-            </div>
-          )}
+          ) : (() => {
+            const batRank = getBattingRankings().find(p => p.id === playerId)?.rank;
+            const bowlRank = getBowlingRankings().find(p => p.id === playerId)?.rank;
+            const fieldRank = getFieldingRankings().find(p => p.id === playerId)?.rank;
+            const overallRank = getOverallRankings().find(p => p.id === playerId)?.rank;
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { icon: '🏏', label: 'Batting Rank', value: batRank ? `#${batRank}` : '—', color: 'bg-emerald-500/20' },
+                  { icon: '🎯', label: 'Bowling Rank', value: bowlRank ? `#${bowlRank}` : '—', color: 'bg-red-500/20' },
+                  { icon: '🧤', label: 'Fielding Rank', value: fieldRank ? `#${fieldRank}` : '—', color: 'bg-blue-500/20' },
+                  { icon: '👑', label: 'Overall Rank', value: overallRank ? `#${overallRank}` : '—', color: 'bg-yellow-500/20' },
+                ].map((item, index) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    className={`${item.color} backdrop-blur-sm rounded-xl p-3 sm:p-4 text-center`}
+                  >
+                    <span className="text-xl sm:text-2xl mb-1 block">{item.icon}</span>
+                    <p className="text-2xl sm:text-3xl font-bold font-display">{item.value}</p>
+                    <p className="text-xs sm:text-sm text-white/70">{item.label}</p>
+                  </motion.div>
+                ))}
+              </div>
+            );
+          })()}
         </motion.div>
 
         {/* Empty State */}
@@ -476,13 +516,14 @@ const PlayerProfile = () => {
                   {/* Bowling extras */}
                   <div className="mt-4 pt-4 border-t">
                     <h4 className="text-sm font-semibold text-muted-foreground mb-3">Additional Stats</h4>
-                    <div className="grid grid-cols-5 gap-2">
+                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                       {[
                         { value: stats?.dot_balls || 0, label: 'Dots', bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-600 dark:text-purple-400' },
                         { value: stats?.three_fers || 0, label: '3-fers', bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-600 dark:text-orange-400' },
                         { value: stats?.five_fers || 0, label: '5-fers', bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-600 dark:text-red-400' },
-                        { value: stats?.fours_conceded || 0, label: '4s', bg: 'bg-muted', text: '' },
-                        { value: stats?.sixes_conceded || 0, label: '6s', bg: 'bg-muted', text: '' },
+                        { value: (stats as any)?.hat_tricks || 0, label: 'Hat-Tricks', bg: 'bg-pink-100 dark:bg-pink-900/30', text: 'text-pink-600 dark:text-pink-400' },
+                        { value: stats?.fours_conceded || 0, label: '4s Given', bg: 'bg-muted', text: '' },
+                        { value: stats?.sixes_conceded || 0, label: '6s Given', bg: 'bg-muted', text: '' },
                       ].map((item) => (
                         <div key={item.label} className={`text-center p-2 ${item.bg} rounded-lg`}>
                           <p className={`text-base sm:text-lg font-bold leading-tight ${item.text}`}>{item.value}</p>
