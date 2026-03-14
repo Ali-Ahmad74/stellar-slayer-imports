@@ -129,6 +129,7 @@ const Admin = () => {
   const [seriesDialogOpen, setSeriesDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteSampleDialogOpen, setDeleteSampleDialogOpen] = useState(false);
+  const [notesMatch, setNotesMatch] = useState<Match | null>(null);
 
   // Bulk assign
   const [bulkAssignSeriesId, setBulkAssignSeriesId] = useState<string>('');
