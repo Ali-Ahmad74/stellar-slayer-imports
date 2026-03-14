@@ -15,7 +15,7 @@ export function usePlayerRankHistory(playerId: number | null | undefined) {
   return useQuery({
     queryKey: ["player-rank-history", playerId],
     queryFn: async (): Promise<RankHistory> => {
-      if (!playerId) return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, currentStreak: 0 };
+      if (!playerId) return { highestOverallRank: null, daysAtNumber1: 0, bestSeason: null, highestBattingRank: null, highestBowlingRank: null, highestFieldingRank: null, currentStreak: 0 };
 
       const { data: snapshots } = await supabase
         .from("rank_snapshots")
