@@ -56,6 +56,9 @@ const PlayerProfile = () => {
   const { isAdmin } = useAuth();
   const [shareOpen, setShareOpen] = useState(false);
 
+  // Get rankings for rank display
+  const { getBattingRankings, getBowlingRankings, getFieldingRankings, getOverallRankings } = usePlayerRankings();
+
   const playerId = id ? Number(id) : null;
   
   // Fetch available seasons for this player
