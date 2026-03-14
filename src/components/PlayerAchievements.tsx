@@ -128,7 +128,7 @@ export function PlayerAchievements({ stats, compact = false, rankHistory }: Play
                   <span className="text-2xl">🥇</span>
                   <div>
                     <p className="text-lg font-bold font-display text-primary">{rankHistory.daysAtNumber1}</p>
-                    <p className="text-[11px] text-muted-foreground">Total Months at #1</p>
+                    <p className="text-[11px] text-muted-foreground">Total Days at #1</p>
                   </div>
                 </div>
               )}
@@ -137,7 +137,7 @@ export function PlayerAchievements({ stats, compact = false, rankHistory }: Play
                   <span className="text-2xl">🔥</span>
                   <div>
                     <p className="text-lg font-bold font-display text-primary">{rankHistory.currentStreak}</p>
-                    <p className="text-[11px] text-muted-foreground">Consecutive #1 Streak</p>
+                    <p className="text-[11px] text-muted-foreground">Consecutive Days at #1</p>
                   </div>
                 </div>
               )}

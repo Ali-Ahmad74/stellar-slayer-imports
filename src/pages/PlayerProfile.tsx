@@ -381,9 +381,13 @@ const PlayerProfile = () => {
                 )}
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-white/70 text-sm mb-3">
+              {/* Player Info Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-1 text-sm text-white/70 mb-3 max-w-lg mx-auto md:mx-0">
                 {player.nationality && (
-                  <span className="flex items-center gap-1"><Globe className="w-3.5 h-3.5" />{player.nationality}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-white/50" />
+                    <span>{player.nationality}</span>
+                  </div>
                 )}
                 {player.date_of_birth && (() => {
                   const today = new Date();
@@ -392,23 +396,35 @@ const PlayerProfile = () => {
                   const m = today.getMonth() - birth.getMonth();
                   if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
                   return (
-                    <span className="flex items-center gap-1">
-                      <Cake className="w-3.5 h-3.5" />
-                      Age {age} • Born {new Date(player.date_of_birth!).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <Cake className="w-3.5 h-3.5 text-white/50" />
+                      <span>{age} yrs</span>
+                    </div>
                   );
                 })()}
+                {player.date_of_birth && (
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 text-white/50" />
+                    <span>{new Date(player.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                  </div>
+                )}
                 {player.debut_date && (
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    Debut {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <Trophy className="w-3.5 h-3.5 text-white/50" />
+                    <span>Debut {new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <Hash className="w-3.5 h-3.5 text-white/50" />
+                  <span>{stats?.matches || 0} Matches</span>
+                </div>
+                {player.jersey_number && (
+                  <div className="flex items-center gap-1.5">
+                    <Hash className="w-3.5 h-3.5 text-white/50" />
+                    <span>Jersey #{player.jersey_number}</span>
+                  </div>
                 )}
               </div>
-
-              <p className="text-white/60 text-sm mb-2">
-                {stats?.matches || 0} Matches {selectedSeasonId !== 'all' ? `in ${selectedSeasonName}` : 'Played'}
-              </p>
               
               {player.bio && (
                 <p className="text-white/50 text-xs italic max-w-md mx-auto">{player.bio}</p>
@@ -594,58 +610,7 @@ const PlayerProfile = () => {
               </Card>
             </motion.div>
 
-            {/* Player Details Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-            >
-              <Card variant="elevated">
-                <CardHeader className="bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-t-xl">
-                  <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">📋</span>
-                    Player Details
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 sm:p-6">
-                  <div className="grid grid-cols-2 gap-3">
-                    {[
-                      { label: 'Full Name', value: player.name, icon: '👤' },
-                      { label: 'Role', value: player.role, icon: '🏏' },
-                      { label: 'Jersey #', value: player.jersey_number ? `#${player.jersey_number}` : '—', icon: '#️⃣' },
-                      { label: 'Nationality', value: player.nationality || '—', icon: '🌍' },
-                      { label: 'Age', value: player.date_of_birth ? (() => {
-                        const today = new Date();
-                        const birth = new Date(player.date_of_birth!);
-                        let age = today.getFullYear() - birth.getFullYear();
-                        const m = today.getMonth() - birth.getMonth();
-                        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-                        return `${age} years`;
-                      })() : '—', icon: '🎂' },
-                      { label: 'Date of Birth', value: player.date_of_birth ? new Date(player.date_of_birth).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', icon: '📅' },
-                      { label: 'Debut', value: player.debut_date ? new Date(player.debut_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—', icon: '⭐' },
-                      { label: 'Batting Style', value: player.batting_style || '—', icon: '🏏' },
-                      { label: 'Bowling Style', value: player.bowling_style || '—', icon: '🎯' },
-                      { label: 'Total Matches', value: stats?.matches || 0, icon: '📊' },
-                    ].map((item) => (
-                      <div key={item.label} className="flex items-start gap-2 p-2 bg-muted/30 rounded-lg">
-                        <span className="text-sm mt-0.5">{item.icon}</span>
-                        <div className="min-w-0">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{item.label}</p>
-                          <p className="text-sm font-semibold text-foreground truncate">{item.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {player.bio && (
-                    <div className="mt-4 pt-3 border-t border-border">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Bio</p>
-                      <p className="text-sm text-muted-foreground italic">{player.bio}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
+
 
             {/* Fielding Stats */}
             <motion.div
