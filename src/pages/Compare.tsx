@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { GitCompare, X, Plus, Trophy } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -6,6 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { usePlayerRankings, PlayerWithStats } from '@/hooks/usePlayerRankings';
+import {
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend, Tooltip
+} from 'recharts';
 import {
   Command,
   CommandEmpty,
@@ -21,10 +24,44 @@ import {
 } from '@/components/ui/popover';
 import { Loader2 } from 'lucide-react';
 
+const RADAR_COLORS = ['hsl(var(--primary))', 'hsl(0, 84%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)'];
+
 const Compare = () => {
   const { players, loading, error } = usePlayerRankings();
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
   const [openPopover, setOpenPopover] = useState<number | null>(null);
+
+  // Radar chart data
+  const radarData = useMemo(() => {
+    if (selectedPlayers.length < 2) return [];
+    
+    // Normalize stats to 0-100 scale
+    const getMax = (fn: (p: PlayerWithStats) => number) => Math.max(...selectedPlayers.map(fn), 1);
+    
+    const maxRuns = getMax(p => p.stats?.total_runs || 0);
+    const maxWickets = getMax(p => p.stats?.wickets || 0);
+    const maxCatches = getMax(p => p.stats?.catches || 0);
+    const maxSR = getMax(p => p.stats?.total_balls ? (p.stats.total_runs / p.stats.total_balls) * 100 : 0);
+    const maxBatPts = getMax(p => p.iccPoints?.battingPoints || 0);
+    const maxBowlPts = getMax(p => p.iccPoints?.bowlingPoints || 0);
+
+    const categories = [
+      { key: 'Runs', max: maxRuns, fn: (p: PlayerWithStats) => p.stats?.total_runs || 0 },
+      { key: 'Wickets', max: maxWickets, fn: (p: PlayerWithStats) => p.stats?.wickets || 0 },
+      { key: 'Catches', max: maxCatches, fn: (p: PlayerWithStats) => p.stats?.catches || 0 },
+      { key: 'Strike Rate', max: maxSR, fn: (p: PlayerWithStats) => p.stats?.total_balls ? (p.stats.total_runs / p.stats.total_balls) * 100 : 0 },
+      { key: 'Bat Points', max: maxBatPts, fn: (p: PlayerWithStats) => p.iccPoints?.battingPoints || 0 },
+      { key: 'Bowl Points', max: maxBowlPts, fn: (p: PlayerWithStats) => p.iccPoints?.bowlingPoints || 0 },
+    ];
+
+    return categories.map(cat => {
+      const entry: any = { stat: cat.key };
+      selectedPlayers.forEach(p => {
+        entry[p.name] = Math.round((cat.fn(p) / cat.max) * 100);
+      });
+      return entry;
+    });
+  }, [selectedPlayers]);
 
   const addPlayer = (player: PlayerWithStats, slotIndex: number) => {
     const newSelected = [...selectedPlayers];
@@ -304,6 +341,44 @@ const Compare = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Radar Chart */}
+              {radarData.length > 0 && (
+                <Card variant="elevated">
+                  <CardHeader>
+                    <CardTitle className="text-lg">📊 Radar Comparison</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <RadarChart data={radarData}>
+                        <PolarGrid stroke="hsl(var(--border))" />
+                        <PolarAngleAxis dataKey="stat" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} />
+                        {selectedPlayers.map((p, i) => (
+                          <Radar
+                            key={p.id}
+                            name={p.name}
+                            dataKey={p.name}
+                            stroke={RADAR_COLORS[i % RADAR_COLORS.length]}
+                            fill={RADAR_COLORS[i % RADAR_COLORS.length]}
+                            fillOpacity={0.15}
+                            strokeWidth={2}
+                          />
+                        ))}
+                        <Legend />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                          }}
+                          formatter={(value: number) => `${value}%`}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Batting Stats */}
               <Card variant="elevated">
