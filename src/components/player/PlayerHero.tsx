@@ -12,7 +12,7 @@ interface PlayerHeroProps {
     debut_date: string | null;
     jersey_number: number | null;
   };
-  formStats: { totalMatches: number; formTrend: string; consistency: number };
+  formStats: { totalMatches: number; formTrend: number; consistency: number };
 }
 
 export const PlayerHero = ({ player, formStats }: PlayerHeroProps) => {
