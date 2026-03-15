@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { PlayerFormBadge } from '@/components/PlayerFormBadge';
-import { RoleBadge } from '@/components/RoleBadge';
 import type { PlayerRole } from '@/types/cricket';
 
 interface PlayerHeroProps {
@@ -12,8 +11,6 @@ interface PlayerHeroProps {
     nationality: string | null;
     debut_date: string | null;
     jersey_number: number | null;
-    batting_style: string | null;
-    bowling_style: string | null;
   };
   formStats: { totalMatches: number; formTrend: number; consistency: number };
 }
@@ -28,55 +25,37 @@ export const PlayerHero = ({ player, formStats }: PlayerHeroProps) => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative overflow-hidden border border-border rounded-xl bg-card"
+      className="relative gradient-header rounded-2xl overflow-hidden shadow-lg"
     >
-      {/* Top gradient bar */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-primary via-accent to-primary" />
-
-      <div className="flex flex-col sm:flex-row gap-4 p-4 sm:p-6">
+      <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-5 p-6 sm:p-8 pb-4">
         {/* Photo */}
-        <div className="flex-shrink-0 flex justify-center sm:justify-start">
-          <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="xl" />
-        </div>
+        <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="xl" />
 
-        {/* Info */}
-        <div className="flex-1 text-center sm:text-left min-w-0">
-          <div className="flex items-center gap-2 justify-center sm:justify-start flex-wrap">
-            <h1 className="font-display text-2xl sm:text-3xl md:text-4xl font-bold text-foreground leading-tight truncate">
+        {/* Info overlay */}
+        <div className="text-center sm:text-left flex-1 pb-2">
+          <div className="flex items-center gap-3 justify-center sm:justify-start mb-1">
+            <h1 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight">
               {player.name}
             </h1>
             {player.jersey_number != null && (
-              <span className="bg-primary/10 text-primary font-display text-sm font-bold px-2 py-0.5 rounded-md">
+              <span className="bg-white/20 backdrop-blur-sm text-white font-display text-lg font-bold px-2.5 py-0.5 rounded-lg">
                 #{player.jersey_number}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-2 justify-center sm:justify-start mt-1.5 flex-wrap">
-            {player.nationality && (
-              <span className="text-sm text-muted-foreground">{player.nationality}</span>
-            )}
-            {player.nationality && <span className="text-muted-foreground/40">•</span>}
-            <RoleBadge role={player.role} />
-          </div>
+          <p className="text-white/80 text-sm sm:text-base">
+            {player.nationality || 'Unknown'} <span className="mx-1.5 text-white/40">|</span> {player.role}
+          </p>
 
-          {/* Quick info row */}
-          <div className="flex items-center gap-3 justify-center sm:justify-start mt-3 text-xs text-muted-foreground flex-wrap">
-            {player.batting_style && (
-              <span className="bg-muted px-2 py-1 rounded-md">{player.batting_style}</span>
-            )}
-            {player.bowling_style && (
-              <span className="bg-muted px-2 py-1 rounded-md">{player.bowling_style}</span>
-            )}
-            {careerStart && (
-              <span className="bg-muted px-2 py-1 rounded-md">
-                {careerStart} – {currentYear}
-              </span>
-            )}
-          </div>
+          {careerStart && (
+            <p className="text-white/60 text-xs sm:text-sm mt-1 uppercase tracking-wider">
+              Career: {careerStart} – {String(currentYear)}
+            </p>
+          )}
 
           {formStats.totalMatches >= 3 && (
-            <div className="mt-3">
+            <div className="mt-2">
               <PlayerFormBadge formTrend={formStats.formTrend} consistency={formStats.consistency} />
             </div>
           )}

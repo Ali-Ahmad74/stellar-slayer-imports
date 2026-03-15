@@ -219,16 +219,12 @@ const PlayerProfile = () => {
         </div>
 
         {/* Social Share */}
-        <div className="mb-4">
+        <div className="mb-5">
           <SocialShareButtons playerName={player.name} stats={stats} teamName={teamSettings?.team_name} />
         </div>
 
         {/* Hero Section - ESPN Cricinfo Style */}
-        <PlayerHero player={{
-          ...player,
-          batting_style: player.batting_style,
-          bowling_style: player.bowling_style,
-        }} formStats={formStats} />
+        <PlayerHero player={player} formStats={formStats} />
 
         {/* Tabs - ESPN Cricinfo Style */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-0">
