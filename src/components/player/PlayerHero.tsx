@@ -50,7 +50,7 @@ export const PlayerHero = ({ player, formStats }: PlayerHeroProps) => {
 
           {careerStart && (
             <p className="text-white/60 text-xs sm:text-sm mt-1 uppercase tracking-wider">
-              Career: {careerStart} – {currentYear}
+              Career: {careerStart} – {String(currentYear)}
             </p>
           )}
 
