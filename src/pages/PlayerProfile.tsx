@@ -219,7 +219,7 @@ const PlayerProfile = () => {
         </div>
 
         {/* Social Share */}
-        <div className="mb-5">
+        <div className="mb-4">
           <SocialShareButtons playerName={player.name} stats={stats} teamName={teamSettings?.team_name} />
         </div>
 
