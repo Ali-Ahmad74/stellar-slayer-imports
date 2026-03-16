@@ -40,6 +40,7 @@ export const PlayerStatsTab = ({ stats, selectedSeasonId, selectedSeasonName, ic
                 { value: stats?.times_out || 0, label: 'Dismissals' },
                 { value: stats ? (stats.matches - stats.times_out) : 0, label: 'Not Outs' },
                 { value: stats?.run_outs_as_batter || 0, label: 'Run Outs' },
+                { value: stats?.ducks || 0, label: 'Ducks 🦆' },
               ].map(i => (
                 <div key={i.label} className="text-center p-3 bg-muted/50 rounded-xl">
                   <p className="text-xl sm:text-2xl font-bold font-display text-primary leading-tight">{i.value}</p>

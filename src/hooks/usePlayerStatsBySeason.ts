@@ -169,6 +169,7 @@ export function usePlayerStatsBySeason(
         stumpings,
         dropped_catches: droppedCatches,
         run_outs_as_batter: runOutsAsBatter,
+        ducks,
       };
 
       setStats(aggregatedStats);

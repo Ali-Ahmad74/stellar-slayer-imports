@@ -387,6 +387,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                 {f.player_name}:{f.catches > 0 && ` ${f.catches}c`}
                 {f.runouts > 0 && ` ${f.runouts}ro`}
                 {f.stumpings > 0 && ` ${f.stumpings}st`}
+                {f.dropped_catches > 0 && <span className="text-destructive"> {f.dropped_catches}d</span>}
               </Badge>
             ))}
           </div>
