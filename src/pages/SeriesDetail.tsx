@@ -392,6 +392,58 @@ export default function SeriesDetail() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  await exportSeriesPDF({
+                    name: series.name,
+                    venue: series.venue,
+                    dateRange,
+                    standing,
+                    topRuns: topRuns.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    topWickets: topWickets.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    topFielding: topFielding.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    matches: matches.map(m => ({
+                      date: new Date(m.match_date).toLocaleDateString(),
+                      opponent: m.opponent_name || "",
+                      ourScore: m.our_score,
+                      opponentScore: m.opponent_score,
+                      result: m.result || "",
+                      overs: m.overs,
+                    })),
+                  }, {
+                    teamName: teamSettings?.team_name,
+                    logoUrl: teamSettings?.team_logo_url,
+                    watermarkHandle: teamSettings?.watermark_handle,
+                  });
+                } finally { setExporting(false); }
+              }}
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={exporting}
+              onClick={async () => {
+                if (!seriesRef.current) return;
+                setExporting(true);
+                try {
+                  const safeName = series.name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+                  await exportSeriesPNG(seriesRef.current, `series-${safeName}.png`);
+                } finally { setExporting(false); }
+              }}
+            >
+              <Image className="w-4 h-4" />
+              PNG
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -403,7 +455,7 @@ export default function SeriesDetail() {
               type="button"
             >
               <Share2 className="w-4 h-4" />
-              Share highlights
+              Share
             </Button>
             {series.is_active && <Badge>Active</Badge>}
           </div>
