@@ -127,7 +127,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
         const fieldingRows: FieldingScorecardRow[] = (fieldRes.data ?? [])
           .filter(
             (f: any) =>
-              Number(f.catches ?? 0) > 0 || Number(f.runouts ?? 0) > 0 || Number(f.stumpings ?? 0) > 0
+              Number(f.catches ?? 0) > 0 || Number(f.runouts ?? 0) > 0 || Number(f.stumpings ?? 0) > 0 || Number(f.dropped_catches ?? 0) > 0
           )
           .map((f: any) => ({
             player_id: f.player_id,
@@ -136,6 +136,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             catches: Number(f.catches ?? 0),
             runouts: Number(f.runouts ?? 0),
             stumpings: Number(f.stumpings ?? 0),
+            dropped_catches: Number(f.dropped_catches ?? 0),
           }));
 
         if (cancelled) return;
