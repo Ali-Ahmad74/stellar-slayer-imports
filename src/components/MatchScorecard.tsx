@@ -92,7 +92,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             .order("wickets", { ascending: false }),
           supabase
             .from("fielding_inputs")
-            .select("player_id, catches, runouts, stumpings, players(name, photo_url)")
+            .select("player_id, catches, runouts, stumpings, dropped_catches, players(name, photo_url)")
             .eq("match_id", matchId),
         ]);
 
