@@ -383,8 +383,8 @@ export default function SeriesDetail() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8 md:py-12 space-y-6">
-        <div className="flex items-center justify-between gap-3">
+      <main className="container py-8 md:py-12 space-y-6" ref={seriesRef}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <Link to="/series">
             <Button variant="outline" size="sm" className="gap-2">
               <ChevronLeft className="w-4 h-4" />
