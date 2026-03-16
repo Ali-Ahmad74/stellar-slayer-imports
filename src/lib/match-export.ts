@@ -194,8 +194,8 @@ export async function exportSingleMatchPDF(
 
     autoTable(doc, {
       startY: currentY,
-      head: [["Player", "Catches", "Run Outs", "Stumpings"]],
-      body: match.fielding.map((f) => [f.player_name, f.catches, f.runouts, f.stumpings]),
+      head: [["Player", "Catches", "Run Outs", "Stumpings", "Drops"]],
+      body: match.fielding.map((f) => [f.player_name, f.catches, f.runouts, f.stumpings, f.dropped_catches]),
       theme: "striped",
       headStyles: { fillColor: [59, 130, 246], fontStyle: "bold", fontSize: 9 },
       styles: { fontSize: 9, cellPadding: 2.5 },
