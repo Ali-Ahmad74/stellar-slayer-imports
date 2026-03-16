@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Image, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { ShareSeriesHighlightsDialog } from "@/components/ShareSeriesHighlightsDialog";
@@ -15,6 +15,7 @@ import { useTeamSettings } from "@/hooks/useTeamSettings";
 import { SeriesFormStrip } from "@/components/series/SeriesFormStrip";
 import { SeriesOpponentBreakdown, type OpponentStandingRow } from "@/components/series/SeriesOpponentBreakdown";
 import { PlayerOfSeriesCard } from "@/components/PlayerOfSeriesCard";
+import { exportSeriesPDF, exportSeriesPNG } from "@/lib/series-export";
 
 interface Series {
   id: number;
