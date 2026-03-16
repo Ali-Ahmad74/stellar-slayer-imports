@@ -39,6 +39,7 @@ export interface FieldingScorecardRow {
   catches: number;
   runouts: number;
   stumpings: number;
+  dropped_catches: number;
 }
 
 function formatOvers(balls: number) {
@@ -91,7 +92,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             .order("wickets", { ascending: false }),
           supabase
             .from("fielding_inputs")
-            .select("player_id, catches, runouts, stumpings, players(name, photo_url)")
+            .select("player_id, catches, runouts, stumpings, dropped_catches, players(name, photo_url)")
             .eq("match_id", matchId),
         ]);
 
@@ -126,7 +127,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
         const fieldingRows: FieldingScorecardRow[] = (fieldRes.data ?? [])
           .filter(
             (f: any) =>
-              Number(f.catches ?? 0) > 0 || Number(f.runouts ?? 0) > 0 || Number(f.stumpings ?? 0) > 0
+              Number(f.catches ?? 0) > 0 || Number(f.runouts ?? 0) > 0 || Number(f.stumpings ?? 0) > 0 || Number(f.dropped_catches ?? 0) > 0
           )
           .map((f: any) => ({
             player_id: f.player_id,
@@ -135,6 +136,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             catches: Number(f.catches ?? 0),
             runouts: Number(f.runouts ?? 0),
             stumpings: Number(f.stumpings ?? 0),
+            dropped_catches: Number(f.dropped_catches ?? 0),
           }));
 
         if (cancelled) return;
@@ -199,6 +201,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
           catches: f.catches,
           runouts: f.runouts,
           stumpings: f.stumpings,
+          dropped_catches: f.dropped_catches,
         })),
       };
       await exportSingleMatchPDF(exportData, exportOptions);
@@ -384,6 +387,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                 {f.player_name}:{f.catches > 0 && ` ${f.catches}c`}
                 {f.runouts > 0 && ` ${f.runouts}ro`}
                 {f.stumpings > 0 && ` ${f.stumpings}st`}
+                {f.dropped_catches > 0 && <span className="text-destructive"> {f.dropped_catches}d</span>}
               </Badge>
             ))}
           </div>

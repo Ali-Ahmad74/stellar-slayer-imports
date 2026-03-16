@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Image, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { ShareSeriesHighlightsDialog } from "@/components/ShareSeriesHighlightsDialog";
@@ -15,6 +15,7 @@ import { useTeamSettings } from "@/hooks/useTeamSettings";
 import { SeriesFormStrip } from "@/components/series/SeriesFormStrip";
 import { SeriesOpponentBreakdown, type OpponentStandingRow } from "@/components/series/SeriesOpponentBreakdown";
 import { PlayerOfSeriesCard } from "@/components/PlayerOfSeriesCard";
+import { exportSeriesPDF, exportSeriesPNG } from "@/lib/series-export";
 
 interface Series {
   id: number;
@@ -159,6 +160,8 @@ export default function SeriesDetail() {
 
   const [expandedMatchId, setExpandedMatchId] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const seriesRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -380,8 +383,8 @@ export default function SeriesDetail() {
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container py-8 md:py-12 space-y-6">
-        <div className="flex items-center justify-between gap-3">
+      <main className="container py-8 md:py-12 space-y-6" ref={seriesRef}>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <Link to="/series">
             <Button variant="outline" size="sm" className="gap-2">
               <ChevronLeft className="w-4 h-4" />
@@ -389,6 +392,58 @@ export default function SeriesDetail() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  await exportSeriesPDF({
+                    name: series.name,
+                    venue: series.venue,
+                    dateRange,
+                    standing,
+                    topRuns: topRuns.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    topWickets: topWickets.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    topFielding: topFielding.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    matches: matches.map(m => ({
+                      date: new Date(m.match_date).toLocaleDateString(),
+                      opponent: m.opponent_name || "",
+                      ourScore: m.our_score,
+                      opponentScore: m.opponent_score,
+                      result: m.result || "",
+                      overs: m.overs,
+                    })),
+                  }, {
+                    teamName: teamSettings?.team_name,
+                    logoUrl: teamSettings?.team_logo_url,
+                    watermarkHandle: teamSettings?.watermark_handle,
+                  });
+                } finally { setExporting(false); }
+              }}
+            >
+              <Download className="w-4 h-4" />
+              PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={exporting}
+              onClick={async () => {
+                if (!seriesRef.current) return;
+                setExporting(true);
+                try {
+                  const safeName = series.name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
+                  await exportSeriesPNG(seriesRef.current, `series-${safeName}.png`);
+                } finally { setExporting(false); }
+              }}
+            >
+              <Image className="w-4 h-4" />
+              PNG
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 
@@ -400,7 +455,7 @@ export default function SeriesDetail() {
               type="button"
             >
               <Share2 className="w-4 h-4" />
-              Share highlights
+              Share
             </Button>
             {series.is_active && <Badge>Active</Badge>}
           </div>

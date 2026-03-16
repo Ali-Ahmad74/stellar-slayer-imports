@@ -78,6 +78,7 @@ export function usePlayerStatsBySeason(
       let thirties = 0;
       let fifties = 0;
       let hundreds = 0;
+      let ducks = 0;
 
       for (const input of battingData || []) {
         totalRuns += input.runs || 0;
@@ -86,6 +87,7 @@ export function usePlayerStatsBySeason(
         sixes += input.sixes || 0;
         if (input.out) timesOut += 1;
         if ((input as any).dismissal_type === 'run_out') runOutsAsBatter += 1;
+        if (input.out && (input.runs || 0) === 0) ducks += 1;
         
         const runs = input.runs || 0;
         if (runs >= 100) hundreds += 1;
@@ -167,6 +169,7 @@ export function usePlayerStatsBySeason(
         stumpings,
         dropped_catches: droppedCatches,
         run_outs_as_batter: runOutsAsBatter,
+        ducks,
       };
 
       setStats(aggregatedStats);
