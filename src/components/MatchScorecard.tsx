@@ -201,6 +201,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
           catches: f.catches,
           runouts: f.runouts,
           stumpings: f.stumpings,
+          dropped_catches: f.dropped_catches,
         })),
       };
       await exportSingleMatchPDF(exportData, exportOptions);
