@@ -42,6 +42,7 @@ export interface SingleMatchExportData {
     catches: number;
     runouts: number;
     stumpings: number;
+    dropped_catches: number;
   }[];
 }
 
