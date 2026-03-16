@@ -87,6 +87,7 @@ export function usePlayerStatsBySeason(
         sixes += input.sixes || 0;
         if (input.out) timesOut += 1;
         if ((input as any).dismissal_type === 'run_out') runOutsAsBatter += 1;
+        if (input.out && (input.runs || 0) === 0) ducks += 1;
         
         const runs = input.runs || 0;
         if (runs >= 100) hundreds += 1;
