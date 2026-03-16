@@ -39,6 +39,7 @@ export interface FieldingScorecardRow {
   catches: number;
   runouts: number;
   stumpings: number;
+  dropped_catches: number;
 }
 
 function formatOvers(balls: number) {
