@@ -78,6 +78,7 @@ export function usePlayerStatsBySeason(
       let thirties = 0;
       let fifties = 0;
       let hundreds = 0;
+      let ducks = 0;
 
       for (const input of battingData || []) {
         totalRuns += input.runs || 0;
