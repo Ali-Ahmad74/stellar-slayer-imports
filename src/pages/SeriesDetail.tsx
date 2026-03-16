@@ -160,6 +160,8 @@ export default function SeriesDetail() {
 
   const [expandedMatchId, setExpandedMatchId] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const seriesRef = useRef<HTMLDivElement>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
