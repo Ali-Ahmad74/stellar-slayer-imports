@@ -427,23 +427,7 @@ export default function SeriesDetail() {
               <Download className="w-4 h-4" />
               PDF
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={exporting}
-              onClick={async () => {
-                if (!seriesRef.current) return;
-                setExporting(true);
-                try {
-                  const safeName = series.name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-                  await exportSeriesPNG(seriesRef.current, `series-${safeName}.png`);
-                } finally { setExporting(false); }
-              }}
-            >
-              <Image className="w-4 h-4" />
-              PNG
-            </Button>
+            
             <Button 
               variant="outline" 
               size="sm" 
