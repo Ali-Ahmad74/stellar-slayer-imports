@@ -17,6 +17,8 @@ export type Database = {
       batting_inputs: {
         Row: {
           balls: number
+          balls_to_fifty: number | null
+          balls_to_hundred: number | null
           batting_position: number | null
           created_at: string
           dismissal_type: string | null
@@ -31,6 +33,8 @@ export type Database = {
         }
         Insert: {
           balls?: number
+          balls_to_fifty?: number | null
+          balls_to_hundred?: number | null
           batting_position?: number | null
           created_at?: string
           dismissal_type?: string | null
@@ -45,6 +49,8 @@ export type Database = {
         }
         Update: {
           balls?: number
+          balls_to_fifty?: number | null
+          balls_to_hundred?: number | null
           batting_position?: number | null
           created_at?: string
           dismissal_type?: string | null

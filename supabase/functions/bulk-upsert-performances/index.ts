@@ -85,6 +85,8 @@ Deno.serve(async (req) => {
           out: batting.out || false,
           dismissal_type: batting.dismissal_type || null,
           batting_position: batting.batting_position || null,
+          balls_to_fifty: batting.balls_to_fifty || null,
+          balls_to_hundred: batting.balls_to_hundred || null,
         });
       }
 
@@ -145,7 +147,6 @@ Deno.serve(async (req) => {
       for (let i = 0; i < battingWithPos.length - 1; i++) {
         const p1 = battingWithPos[i];
         const p2 = battingWithPos[i + 1];
-        // Partnership runs = sum of both batsmen's runs (simplified)
         partnerships.push({
           match_id,
           wicket_number: i + 1,

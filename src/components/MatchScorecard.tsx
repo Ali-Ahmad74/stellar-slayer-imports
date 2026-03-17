@@ -4,9 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Image, Loader2 } from "lucide-react";
+import { Download, Loader2, Share2 } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
-import { exportSingleMatchPDF, exportSingleMatchPNG, type SingleMatchExportData, type MatchExportOptions } from "@/lib/match-export";
+import { exportSingleMatchPDF, type SingleMatchExportData, type MatchExportOptions } from "@/lib/match-export";
+import { ShareMatchScorecardDialog } from "@/components/ShareMatchScorecardDialog";
+import { useTeamSettings } from "@/hooks/useTeamSettings";
 
 export interface BattingScorecardRow {
   player_id: number;
@@ -18,6 +20,8 @@ export interface BattingScorecardRow {
   sixes: number;
   out: boolean;
   dismissal_type: string | null;
+  balls_to_fifty: number | null;
+  balls_to_hundred: number | null;
 }
 
 export interface BowlingScorecardRow {
@@ -71,7 +75,8 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
   const [fielding, setFielding] = useState<FieldingScorecardRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
-  const scorecardRef = useRef<HTMLDivElement>(null);
+  const [shareOpen, setShareOpen] = useState(false);
+  const { teamSettings } = useTeamSettings();
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +87,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
         const [batRes, bowlRes, fieldRes] = await Promise.all([
           supabase
             .from("batting_inputs")
-            .select("player_id, runs, balls, fours, sixes, out, dismissal_type, players(name, photo_url)")
+            .select("player_id, runs, balls, fours, sixes, out, dismissal_type, balls_to_fifty, balls_to_hundred, players(name, photo_url)")
             .eq("match_id", matchId)
             .order("runs", { ascending: false }),
           supabase
@@ -110,6 +115,8 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
           sixes: Number(b.sixes ?? 0),
           out: Boolean(b.out),
           dismissal_type: b.dismissal_type || null,
+          balls_to_fifty: b.balls_to_fifty ?? null,
+          balls_to_hundred: b.balls_to_hundred ?? null,
         }));
 
         const bowlingRows: BowlingScorecardRow[] = (bowlRes.data ?? []).map((b: any) => ({
@@ -153,9 +160,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
     };
 
     run();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [matchId]);
 
   const isEmpty = useMemo(() => batting.length === 0 && bowling.length === 0 && fielding.length === 0, [batting, bowling, fielding]);
@@ -210,17 +215,6 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
     }
   };
 
-  const handleExportPNG = async () => {
-    if (!scorecardRef.current || !matchMeta) return;
-    setExporting(true);
-    try {
-      const safeName = (matchMeta.opponent || "match").replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-      await exportSingleMatchPNG(scorecardRef.current, `match-vs-${safeName}-${matchMeta.date}.png`);
-    } finally {
-      setExporting(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -237,12 +231,23 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
     return <p className="text-center text-muted-foreground py-4">No detailed scorecard available for this match</p>;
   }
 
-  // Separate batters who actually batted vs DNB (0 runs, 0 balls, not out)
   const actualBatters = batting.filter(b => b.balls > 0 || b.runs > 0 || b.out);
   const dnbPlayers = batting.filter(b => b.balls === 0 && b.runs === 0 && !b.out);
 
+  // Data for share dialog
+  const shareBatting = actualBatters.map(b => ({
+    player_name: b.player_name, runs: b.runs, balls: b.balls, fours: b.fours, sixes: b.sixes, out: b.out,
+  }));
+  const shareBowling = bowling.map(b => ({
+    player_name: b.player_name, overs: formatOvers(b.balls), wickets: b.wickets, runs_conceded: b.runs_conceded,
+    economy: b.balls > 0 ? (b.runs_conceded / (b.balls / 6)).toFixed(2) : "0.00",
+  }));
+  const shareFielding = fielding.map(f => ({
+    player_name: f.player_name, catches: f.catches, runouts: f.runouts, stumpings: f.stumpings,
+  }));
+
   return (
-    <div className="p-4 space-y-6" ref={scorecardRef}>
+    <div className="p-4 space-y-6">
       {/* Export buttons */}
       {showExport && matchMeta && (
         <div className="flex items-center justify-end gap-2">
@@ -259,12 +264,13 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
           <Button
             variant="outline"
             size="sm"
-            onClick={handleExportPNG}
+            onClick={(e) => { e.preventDefault(); setShareOpen(true); }}
             disabled={exporting}
             className="gap-1.5"
+            type="button"
           >
-            <Image className="w-3.5 h-3.5" />
-            PNG
+            <Share2 className="w-3.5 h-3.5" />
+            Share
           </Button>
         </div>
       )}
@@ -315,12 +321,23 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
               </TableBody>
             </Table>
           </div>
-          {/* Balls to 50/100 annotations */}
+          {/* Milestone annotations using balls_to_fifty / balls_to_hundred */}
           {actualBatters.some(b => b.runs >= 50) && (
             <div className="mt-2 flex flex-wrap gap-2">
-              {actualBatters.filter(b => b.runs >= 50).map(b => (
-                <Badge key={b.player_id} variant="outline" className="text-xs">
-                  {b.player_name}: {b.runs >= 100 ? `💯 Century off ${b.balls} balls` : `⭐ Fifty off ${b.balls} balls`}
+              {actualBatters.filter(b => b.runs >= 100 && b.balls_to_hundred).map(b => (
+                <Badge key={`${b.player_id}-100`} variant="outline" className="text-xs">
+                  {b.player_name}: 💯 Century off {b.balls_to_hundred} balls
+                </Badge>
+              ))}
+              {actualBatters.filter(b => b.runs >= 50 && b.balls_to_fifty).map(b => (
+                <Badge key={`${b.player_id}-50`} variant="outline" className="text-xs">
+                  {b.player_name}: ⭐ Fifty off {b.balls_to_fifty} balls
+                </Badge>
+              ))}
+              {/* Fallback for entries without specific balls_to_fifty/hundred */}
+              {actualBatters.filter(b => b.runs >= 50 && !b.balls_to_fifty && !b.balls_to_hundred).map(b => (
+                <Badge key={`${b.player_id}-fallback`} variant="outline" className="text-xs text-muted-foreground">
+                  {b.player_name}: {b.runs >= 100 ? "💯 Century" : "⭐ Fifty"}
                 </Badge>
               ))}
             </div>
@@ -392,6 +409,20 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             ))}
           </div>
         </div>
+      )}
+
+      {/* Share Dialog */}
+      {matchMeta && (
+        <ShareMatchScorecardDialog
+          open={shareOpen}
+          onOpenChange={setShareOpen}
+          teamName={teamSettings?.team_name}
+          teamSettings={teamSettings}
+          match={matchMeta}
+          batting={shareBatting}
+          bowling={shareBowling}
+          fielding={shareFielding}
+        />
       )}
     </div>
   );

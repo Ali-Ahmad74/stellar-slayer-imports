@@ -89,7 +89,7 @@ type DismissalType = "caught" | "bowled" | "run_out" | "stumped" | "lbw" | "hit_
 
 type DraftRow = {
   include: boolean;
-  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null; batting_position: string };
+  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null; batting_position: string; balls_to_fifty: string; balls_to_hundred: string };
   bowling: {
     balls: string;
     runs_conceded: string;
@@ -108,7 +108,7 @@ type DraftRow = {
 function emptyDraftRow(): DraftRow {
   return {
     include: false,
-    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null, batting_position: "" },
+    batting: { runs: "0", balls: "0", fours: "0", sixes: "0", status: "dnb", dismissal_type: null, batting_position: "", balls_to_fifty: "", balls_to_hundred: "" },
     bowling: {
       balls: "0",
       runs_conceded: "0",
@@ -641,6 +641,8 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
             out: r.batting.status === "out",
             dismissal_type: r.batting.status === "out" ? (r.batting.dismissal_type || null) : null,
             batting_position: toInt(r.batting.batting_position) || null,
+            balls_to_fifty: toInt(r.batting.runs) >= 50 ? (toInt(r.batting.balls_to_fifty) || null) : null,
+            balls_to_hundred: toInt(r.batting.runs) >= 100 ? (toInt(r.batting.balls_to_hundred) || null) : null,
           },
           bowling: {
             balls: toInt(r.bowling.balls),
@@ -1124,9 +1126,9 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
           style={{ WebkitOverflowScrolling: 'touch' }}
           onPaste={handlePaste}
         >
-          <div className="min-w-[1520px]">
+          <div className="min-w-[1720px]">
             <div className="sticky top-0 z-20 bg-background border-b border-border">
-              <div className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              <div className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_90px_90px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
                 <div className="sticky left-0 z-20 bg-background pr-2 border-r border-border">Player</div>
                 <div>#</div>
                 <div>Runs</div>
@@ -1135,6 +1137,8 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                 <div>6s</div>
                 <div>Status</div>
                 <div>Dismissal</div>
+                <div>50 balls</div>
+                <div>100 balls</div>
                 <div>Bowl balls</div>
                 <div>Runs conc</div>
                 <div>Wkts</div>
@@ -1157,7 +1161,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
               return (
                 <div
                   key={p.id}
-                  className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
+                  className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_90px_90px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
                 >
                   <div className="sticky left-0 z-10 bg-background flex items-center gap-2 pr-2 border-r border-border">
                     <Checkbox
@@ -1255,6 +1259,48 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                  ) : (
+                    <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
+                  )}
+
+                  {/* Balls to 50 - only editable when runs >= 50 */}
+                  {toInt(r.batting.runs) >= 50 ? (
+                    <Input
+                      inputMode="numeric"
+                      placeholder="—"
+                      value={r.batting.balls_to_fifty}
+                      onChange={(e) =>
+                        setRows((prev) => ({
+                          ...prev,
+                          [p.id]: {
+                            ...prev[p.id],
+                            batting: { ...prev[p.id].batting, balls_to_fifty: e.target.value },
+                          },
+                        }))
+                      }
+                      className="w-[80px] text-center"
+                    />
+                  ) : (
+                    <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
+                  )}
+
+                  {/* Balls to 100 - only editable when runs >= 100 */}
+                  {toInt(r.batting.runs) >= 100 ? (
+                    <Input
+                      inputMode="numeric"
+                      placeholder="—"
+                      value={r.batting.balls_to_hundred}
+                      onChange={(e) =>
+                        setRows((prev) => ({
+                          ...prev,
+                          [p.id]: {
+                            ...prev[p.id],
+                            batting: { ...prev[p.id].batting, balls_to_hundred: e.target.value },
+                          },
+                        }))
+                      }
+                      className="w-[80px] text-center"
+                    />
                   ) : (
                     <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
                   )}

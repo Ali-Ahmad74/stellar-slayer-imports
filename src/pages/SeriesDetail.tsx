@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Image, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { ShareSeriesHighlightsDialog } from "@/components/ShareSeriesHighlightsDialog";
@@ -15,7 +15,7 @@ import { useTeamSettings } from "@/hooks/useTeamSettings";
 import { SeriesFormStrip } from "@/components/series/SeriesFormStrip";
 import { SeriesOpponentBreakdown, type OpponentStandingRow } from "@/components/series/SeriesOpponentBreakdown";
 import { PlayerOfSeriesCard } from "@/components/PlayerOfSeriesCard";
-import { exportSeriesPDF, exportSeriesPNG } from "@/lib/series-export";
+import { exportSeriesPDF } from "@/lib/series-export";
 
 interface Series {
   id: number;
@@ -427,23 +427,7 @@ export default function SeriesDetail() {
               <Download className="w-4 h-4" />
               PDF
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              disabled={exporting}
-              onClick={async () => {
-                if (!seriesRef.current) return;
-                setExporting(true);
-                try {
-                  const safeName = series.name.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase();
-                  await exportSeriesPNG(seriesRef.current, `series-${safeName}.png`);
-                } finally { setExporting(false); }
-              }}
-            >
-              <Image className="w-4 h-4" />
-              PNG
-            </Button>
+            
             <Button 
               variant="outline" 
               size="sm" 
