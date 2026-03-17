@@ -15,7 +15,7 @@ import { useTeamSettings } from "@/hooks/useTeamSettings";
 import { SeriesFormStrip } from "@/components/series/SeriesFormStrip";
 import { SeriesOpponentBreakdown, type OpponentStandingRow } from "@/components/series/SeriesOpponentBreakdown";
 import { PlayerOfSeriesCard } from "@/components/PlayerOfSeriesCard";
-import { exportSeriesPDF, exportSeriesPNG } from "@/lib/series-export";
+import { exportSeriesPDF } from "@/lib/series-export";
 
 interface Series {
   id: number;
