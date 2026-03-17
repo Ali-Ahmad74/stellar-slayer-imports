@@ -1126,9 +1126,9 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
           style={{ WebkitOverflowScrolling: 'touch' }}
           onPaste={handlePaste}
         >
-          <div className="min-w-[1520px]">
+          <div className="min-w-[1720px]">
             <div className="sticky top-0 z-20 bg-background border-b border-border">
-              <div className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
+              <div className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_90px_90px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 text-xs font-semibold text-muted-foreground">
                 <div className="sticky left-0 z-20 bg-background pr-2 border-r border-border">Player</div>
                 <div>#</div>
                 <div>Runs</div>
@@ -1137,6 +1137,8 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                 <div>6s</div>
                 <div>Status</div>
                 <div>Dismissal</div>
+                <div>50 balls</div>
+                <div>100 balls</div>
                 <div>Bowl balls</div>
                 <div>Runs conc</div>
                 <div>Wkts</div>
