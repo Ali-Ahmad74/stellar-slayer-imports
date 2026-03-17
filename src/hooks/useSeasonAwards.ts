@@ -46,26 +46,26 @@ export function useSeasonAwards(seasonId?: number) {
 
 // Calculate and save season awards
 export async function calculateSeasonAwards(seasonId: number): Promise<void> {
-  // Get all matches for this season via their inputs
-  const { data: batInputs, error: batErr } = await supabase
-    .from("batting_inputs")
-    .select("player_id, runs, balls, fours, sixes")
+  // First get all match IDs for this season
+  const { data: matchRows, error: matchErr } = await supabase
+    .from("matches")
+    .select("id")
     .eq("season_id", seasonId);
+
+  if (matchErr) throw matchErr;
+  const matchIds = (matchRows ?? []).map((m: any) => m.id);
+  
+  if (matchIds.length === 0) return;
+
+  // Get inputs by match_id (more reliable than season_id on inputs)
+  const [{ data: batInputs, error: batErr }, { data: bowlInputs, error: bowlErr }, { data: fieldInputs, error: fieldErr }] = await Promise.all([
+    supabase.from("batting_inputs").select("player_id, runs, balls, fours, sixes").in("match_id", matchIds),
+    supabase.from("bowling_inputs").select("player_id, balls, runs_conceded, wickets, maidens").in("match_id", matchIds),
+    supabase.from("fielding_inputs").select("player_id, catches, runouts, stumpings").in("match_id", matchIds),
+  ]);
 
   if (batErr) throw batErr;
-
-  const { data: bowlInputs, error: bowlErr } = await supabase
-    .from("bowling_inputs")
-    .select("player_id, balls, runs_conceded, wickets, maidens")
-    .eq("season_id", seasonId);
-
   if (bowlErr) throw bowlErr;
-
-  const { data: fieldInputs, error: fieldErr } = await supabase
-    .from("fielding_inputs")
-    .select("player_id, catches, runouts, stumpings")
-    .eq("season_id", seasonId);
-
   if (fieldErr) throw fieldErr;
 
   // Aggregate batting
