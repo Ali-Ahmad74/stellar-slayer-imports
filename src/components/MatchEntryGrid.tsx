@@ -1161,7 +1161,7 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
               return (
                 <div
                   key={p.id}
-                  className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
+                  className="grid grid-cols-[240px_60px_repeat(4,110px)_110px_110px_90px_90px_repeat(10,110px)_repeat(4,110px)] items-center gap-2 px-3 py-2 border-b border-border"
                 >
                   <div className="sticky left-0 z-10 bg-background flex items-center gap-2 pr-2 border-r border-border">
                     <Checkbox
