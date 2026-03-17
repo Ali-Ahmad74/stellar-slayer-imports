@@ -7,7 +7,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Image, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
+import { Calendar, ChevronDown, ChevronLeft, ChevronUp, Download, Loader2, MapPin, Share2, Trophy, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { MatchScorecard } from "@/components/MatchScorecard";
 import { ShareSeriesHighlightsDialog } from "@/components/ShareSeriesHighlightsDialog";
