@@ -2,11 +2,15 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Trophy, Target, Shield, Star } from "lucide-react";
-import { useSeasonAwards, SeasonAward } from "@/hooks/useSeasonAwards";
+import { Button } from "@/components/ui/button";
+import { Loader2, Trophy, Target, Shield, Star, RefreshCw } from "lucide-react";
+import { useSeasonAwards, SeasonAward, calculateSeasonAwards } from "@/hooks/useSeasonAwards";
 import { useSeasons } from "@/hooks/useSeasons";
+import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const awardConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
   batsman_of_season: {
@@ -84,10 +88,12 @@ function AwardCard({ award }: { award: SeasonAward }) {
 
 export function SeasonAwardsDisplay({ compact = false }: { compact?: boolean }) {
   const { seasons, loading: seasonsLoading, activeSeasonId } = useSeasons();
+  const { isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedSeasonId, setSelectedSeasonId] = useState<string | null>(null);
   const [seasonInitialized, setSeasonInitialized] = useState(false);
+  const [calculating, setCalculating] = useState(false);
 
-  // Set default season to active season when loaded
   useEffect(() => {
     if (!seasonsLoading && !seasonInitialized && activeSeasonId) {
       setSelectedSeasonId(activeSeasonId);
@@ -101,6 +107,28 @@ export function SeasonAwardsDisplay({ compact = false }: { compact?: boolean }) 
   const effectiveSeasonId = selectedSeasonId ?? 'all';
   const seasonIdFilter = effectiveSeasonId === "all" ? undefined : Number(effectiveSeasonId);
   const { data: awards, isLoading, error } = useSeasonAwards(seasonIdFilter);
+
+  const handleCalculate = async () => {
+    if (!seasons || seasons.length === 0) return;
+    setCalculating(true);
+    try {
+      // Calculate for all seasons or just the selected one
+      const targetSeasons = seasonIdFilter 
+        ? [seasonIdFilter] 
+        : seasons.map(s => s.id);
+      
+      for (const sid of targetSeasons) {
+        await calculateSeasonAwards(sid);
+      }
+      
+      await queryClient.invalidateQueries({ queryKey: ["season-awards"] });
+      toast.success("Season awards calculated successfully!");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to calculate awards");
+    } finally {
+      setCalculating(false);
+    }
+  };
 
   if (isLoading || seasonsLoading) {
     return (
@@ -122,24 +150,8 @@ export function SeasonAwardsDisplay({ compact = false }: { compact?: boolean }) 
     );
   }
 
-  if (!awards || awards.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-primary" />
-            Season Awards
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          No season awards calculated yet. Awards are generated when seasons end.
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Group by season for display
-  const groupedBySeason = awards.reduce((acc, award) => {
+  const groupedBySeason = (awards ?? []).reduce((acc, award) => {
     if (!acc[award.season_name]) acc[award.season_name] = [];
     acc[award.season_name].push(award);
     return acc;
@@ -152,24 +164,42 @@ export function SeasonAwardsDisplay({ compact = false }: { compact?: boolean }) 
           <Trophy className="w-5 h-5 text-primary" />
           Season Awards
         </CardTitle>
-        {seasons && seasons.length > 0 && (
-          <Select value={effectiveSeasonId} onValueChange={setSelectedSeasonId}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All seasons" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All seasons</SelectItem>
-              {seasons.map((s) => (
-                <SelectItem key={s.id} value={String(s.id)}>
-                  {s.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+        <div className="flex items-center gap-2">
+          {seasons && seasons.length > 0 && (
+            <Select value={effectiveSeasonId} onValueChange={setSelectedSeasonId}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="All seasons" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All seasons</SelectItem>
+                {seasons.map((s) => (
+                  <SelectItem key={s.id} value={String(s.id)}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+          {isAdmin && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCalculate}
+              disabled={calculating}
+              className="gap-1.5"
+            >
+              {calculating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}
+              Calculate
+            </Button>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        {compact ? (
+        {(!awards || awards.length === 0) ? (
+          <div className="py-8 text-center text-muted-foreground">
+            No season awards yet. {isAdmin ? 'Click "Calculate" to generate awards.' : 'Awards are generated when seasons end.'}
+          </div>
+        ) : compact ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {awards.slice(0, 3).map((award) => (
               <AwardCard key={award.id} award={award} />
