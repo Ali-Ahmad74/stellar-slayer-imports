@@ -1263,6 +1263,48 @@ export function MatchEntryGrid({ players, matches }: { players: Player[]; matche
                     <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
                   )}
 
+                  {/* Balls to 50 - only editable when runs >= 50 */}
+                  {toInt(r.batting.runs) >= 50 ? (
+                    <Input
+                      inputMode="numeric"
+                      placeholder="—"
+                      value={r.batting.balls_to_fifty}
+                      onChange={(e) =>
+                        setRows((prev) => ({
+                          ...prev,
+                          [p.id]: {
+                            ...prev[p.id],
+                            batting: { ...prev[p.id].batting, balls_to_fifty: e.target.value },
+                          },
+                        }))
+                      }
+                      className="w-[80px] text-center"
+                    />
+                  ) : (
+                    <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
+                  )}
+
+                  {/* Balls to 100 - only editable when runs >= 100 */}
+                  {toInt(r.batting.runs) >= 100 ? (
+                    <Input
+                      inputMode="numeric"
+                      placeholder="—"
+                      value={r.batting.balls_to_hundred}
+                      onChange={(e) =>
+                        setRows((prev) => ({
+                          ...prev,
+                          [p.id]: {
+                            ...prev[p.id],
+                            batting: { ...prev[p.id].batting, balls_to_hundred: e.target.value },
+                          },
+                        }))
+                      }
+                      className="w-[80px] text-center"
+                    />
+                  ) : (
+                    <div className="h-9 flex items-center justify-center text-xs text-muted-foreground">—</div>
+                  )}
+
                   {/* Bowling */}
                   {(
                     [
