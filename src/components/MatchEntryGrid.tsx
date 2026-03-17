@@ -89,7 +89,7 @@ type DismissalType = "caught" | "bowled" | "run_out" | "stumped" | "lbw" | "hit_
 
 type DraftRow = {
   include: boolean;
-  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null; batting_position: string };
+  batting: { runs: string; balls: string; fours: string; sixes: string; status: BattingStatus; dismissal_type: DismissalType | null; batting_position: string; balls_to_fifty: string; balls_to_hundred: string };
   bowling: {
     balls: string;
     runs_conceded: string;
