@@ -157,7 +157,10 @@ export function RankingsTable({ title, icon, category, players }: RankingsTableP
                           <PlayerAvatar name={player.name} photoUrl={player.photo_url} size="sm" />
                           <div>
                             <p className="font-semibold">{player.name}</p>
-                            <RoleBadge role={player.role} size="sm" />
+                            <div className="flex items-center gap-2">
+                              <RoleBadge role={player.role} size="sm" />
+                              <RecentFormDots playerId={player.id} />
+                            </div>
                           </div>
                         </Link>
                       </TableCell>
