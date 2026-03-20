@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ClipboardCheck } from 'lucide-react';
 import type { PlayerRole } from '@/types/cricket';
+import { PlayerMilestoneTracker } from './PlayerMilestoneTracker';
 
 interface PlayerOverviewTabProps {
   player: {
@@ -125,6 +126,17 @@ export const PlayerOverviewTab = ({ player, stats, selectedSeasonName, attendanc
           </div>
         </CardContent>
       </Card>
+
+      {/* Milestone Tracker */}
+      <PlayerMilestoneTracker stats={stats ? {
+        total_runs: stats.matches > 0 ? (stats as any).total_runs || 0 : 0,
+        wickets: (stats as any).wickets || 0,
+        catches: (stats as any).catches || 0,
+        matches: stats.matches || 0,
+        fifties: (stats as any).fifties || 0,
+        hundreds: (stats as any).hundreds || 0,
+        five_fers: (stats as any).five_fers || 0,
+      } : null} />
     </div>
   );
 };
