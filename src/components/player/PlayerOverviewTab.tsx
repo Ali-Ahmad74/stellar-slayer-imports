@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { ClipboardCheck } from 'lucide-react';
 import type { PlayerRole } from '@/types/cricket';
+import { PlayerMilestoneTracker } from './PlayerMilestoneTracker';
 
 interface PlayerOverviewTabProps {
   player: {
