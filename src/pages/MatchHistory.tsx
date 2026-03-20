@@ -197,17 +197,17 @@ const MatchHistory = () => {
 
     for (const match of filteredMatches) {
       const [batRes, bowlRes, fieldRes] = await Promise.all([
-        supabaseClient
+        supabase
           .from("batting_inputs")
           .select("player_id, runs, balls, fours, sixes, out, players(name)")
           .eq("match_id", match.id)
           .order("runs", { ascending: false }),
-        supabaseClient
+        supabase
           .from("bowling_inputs")
           .select("player_id, balls, runs_conceded, wickets, maidens, wides, no_balls, players(name)")
           .eq("match_id", match.id)
           .order("wickets", { ascending: false }),
-        supabaseClient
+        supabase
           .from("fielding_inputs")
           .select("player_id, catches, runouts, stumpings, players(name)")
           .eq("match_id", match.id),
