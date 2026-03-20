@@ -2,11 +2,55 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { RankBadge } from './RankBadge';
 import { PlayerAvatar } from './PlayerAvatar';
 import { RoleBadge } from './RoleBadge';
 import { RankingPlayer, RankingCategory } from '@/types/cricket';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
+function RecentFormDots({ playerId }: { playerId: number }) {
+  const { data: dots } = useQuery({
+    queryKey: ['recent-form', playerId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('batting_inputs')
+        .select('runs, match_id')
+        .eq('player_id', playerId)
+        .order('match_id', { ascending: false })
+        .limit(5);
+      return (data ?? []).map(d => Number(d.runs ?? 0));
+    },
+    staleTime: 60000,
+  });
+
+  if (!dots || dots.length === 0) return null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="flex gap-0.5 mt-0.5">
+          {dots.map((runs, i) => (
+            <span
+              key={i}
+              className={`w-2 h-2 rounded-full ${
+                runs >= 50 ? 'bg-emerald-500' :
+                runs >= 30 ? 'bg-green-400' :
+                runs >= 15 ? 'bg-amber-400' :
+                runs > 0 ? 'bg-orange-400' :
+                'bg-red-400'
+              }`}
+            />
+          ))}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="text-xs">
+        Last {dots.length}: {dots.join(', ')} runs
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 interface RankingsTableProps {
   title: string;
   icon: string;
