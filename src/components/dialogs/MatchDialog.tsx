@@ -137,6 +137,15 @@ export function MatchDialog({ open, onOpenChange, onSave, match, tournaments = [
     }
   }, [match, open]);
 
+  // Auto-calculate result based on scores
+  useEffect(() => {
+    if (ourScore > 0 || opponentScore > 0) {
+      if (ourScore > opponentScore) setResult('Won');
+      else if (ourScore < opponentScore) setResult('Lost');
+      else if (ourScore === opponentScore && ourScore > 0) setResult('Tied');
+    }
+  }, [ourScore, opponentScore]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({

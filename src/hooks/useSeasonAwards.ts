@@ -132,11 +132,18 @@ export async function calculateSeasonAwards(seasonId: number): Promise<void> {
     }
   }
 
-  // Upsert awards
-  const upserts = [];
+  // Delete old awards for this season first
+  const { error: delErr } = await supabase
+    .from("season_awards")
+    .delete()
+    .eq("season_id", seasonId);
+  if (delErr) throw delErr;
+
+  // Insert new awards
+  const inserts = [];
 
   if (bestBatsman) {
-    upserts.push({
+    inserts.push({
       season_id: seasonId,
       award_type: "batsman_of_season",
       player_id: bestBatsman.player_id,
@@ -146,7 +153,7 @@ export async function calculateSeasonAwards(seasonId: number): Promise<void> {
   }
 
   if (bestBowler) {
-    upserts.push({
+    inserts.push({
       season_id: seasonId,
       award_type: "bowler_of_season",
       player_id: bestBowler.player_id,
@@ -156,7 +163,7 @@ export async function calculateSeasonAwards(seasonId: number): Promise<void> {
   }
 
   if (bestFielder) {
-    upserts.push({
+    inserts.push({
       season_id: seasonId,
       award_type: "fielder_of_season",
       player_id: bestFielder.player_id,
@@ -165,10 +172,8 @@ export async function calculateSeasonAwards(seasonId: number): Promise<void> {
     });
   }
 
-  if (upserts.length > 0) {
-    const { error } = await supabase.from("season_awards").upsert(upserts, {
-      onConflict: "season_id,award_type",
-    });
+  if (inserts.length > 0) {
+    const { error } = await supabase.from("season_awards").insert(inserts);
     if (error) throw error;
   }
 }

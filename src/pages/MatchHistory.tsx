@@ -23,7 +23,7 @@ import {
   type FieldingScorecardRow
 } from '@/lib/pdf-export';
 import { exportSingleMatchPDF, type SingleMatchExportData } from '@/lib/match-export';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
+
 import {
   Select,
   SelectContent,
