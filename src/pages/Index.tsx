@@ -111,6 +111,12 @@ const Index = () => {
             <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-8 max-w-md mx-auto">
               <p className="text-destructive font-medium">Error loading data</p>
               <p className="text-destructive/70 text-sm mt-2">{error}</p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors font-medium text-sm"
+              >
+                🔄 Retry
+              </button>
             </div>
           </div> : <>
             {/* Hero Section */}
