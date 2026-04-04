@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GitCompare, X, Plus, Trophy } from 'lucide-react';
 import { Header } from '@/components/Header';
@@ -27,9 +28,25 @@ import { Loader2 } from 'lucide-react';
 const RADAR_COLORS = ['hsl(var(--primary))', 'hsl(0, 84%, 60%)', 'hsl(142, 71%, 45%)', 'hsl(45, 93%, 47%)'];
 
 const Compare = () => {
+  const location = useLocation();
   const { players, loading, error } = usePlayerRankings();
   const [selectedPlayers, setSelectedPlayers] = useState<PlayerWithStats[]>([]);
   const [openPopover, setOpenPopover] = useState<number | null>(null);
+  const [preselectDone, setPreselectDone] = useState(false);
+
+  // Auto-select player from profile page
+  useEffect(() => {
+    if (!loading && players.length > 0 && !preselectDone) {
+      const state = location.state as { preselect?: number } | null;
+      if (state?.preselect) {
+        const found = players.find(p => p.id === state.preselect);
+        if (found && !selectedPlayers.find(sp => sp.id === found.id)) {
+          setSelectedPlayers([found]);
+        }
+      }
+      setPreselectDone(true);
+    }
+  }, [loading, players, location.state, preselectDone, selectedPlayers]);
 
   // Radar chart data
   const radarData = useMemo(() => {

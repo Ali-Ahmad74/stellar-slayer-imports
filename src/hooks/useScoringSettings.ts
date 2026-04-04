@@ -130,8 +130,9 @@ export function useScoringSettings() {
   }, [fetchSettings]);
 
   useEffect(() => {
+    const channelName = `scoring-settings-realtime-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel("scoring-settings-realtime")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "scoring_settings" },

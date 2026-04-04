@@ -8,6 +8,9 @@ import { usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { Loader2, Trophy, Target, TrendingUp, Users, Calendar, Zap, Award, Activity, MapPin, Flame, ArrowUp, ArrowDown } from 'lucide-react';
 import { TeamAchievements } from '@/components/TeamAchievements';
 import { TeamRecords } from '@/components/TeamRecords';
+import { ActivityFeed } from '@/components/ActivityFeed';
+import { BackupExportButton } from '@/components/BackupExportButton';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line
@@ -26,6 +29,7 @@ interface Match {
 }
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const { players, loading: playersLoading } = usePlayerRankings();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
@@ -244,11 +248,14 @@ const Dashboard = () => {
               Comprehensive overview of team performance
             </p>
           </div>
-          <SeasonFilter 
-            years={years} 
-            selectedYear={selectedYear} 
-            onYearChange={setSelectedYear} 
-          />
+          <div className="flex items-center gap-2">
+            {isAdmin && <BackupExportButton />}
+            <SeasonFilter 
+              years={years} 
+              selectedYear={selectedYear} 
+              onYearChange={setSelectedYear} 
+            />
+          </div>
         </motion.div>
 
         {/* Key Metrics */}
@@ -498,6 +505,11 @@ const Dashboard = () => {
               </Card>
             ))}
           </div>
+        </motion.div>
+
+        {/* Activity Feed */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.48 }} className="mb-8">
+          <ActivityFeed />
         </motion.div>
 
         {/* Team Achievements & Partnerships */}
