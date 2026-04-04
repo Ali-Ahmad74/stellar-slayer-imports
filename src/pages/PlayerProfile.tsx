@@ -208,6 +208,9 @@ const PlayerProfile = () => {
               />
             </div>
             <Button size="sm" onClick={() => setShareOpen(true)}>Share</Button>
+            <Button size="sm" variant="outline" className="gap-1" onClick={() => navigate('/compare', { state: { preselect: playerId } })}>
+              <GitCompare className="w-3.5 h-3.5" /> Compare
+            </Button>
             {isAdmin && (
               <>
                 <Button onClick={handleExportPDF} variant="outline" size="sm" className="gap-1" disabled={!hasStats}>
