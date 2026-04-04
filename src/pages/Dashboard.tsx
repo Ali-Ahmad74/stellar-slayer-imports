@@ -29,6 +29,7 @@ interface Match {
 }
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const { players, loading: playersLoading } = usePlayerRankings();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
