@@ -378,6 +378,7 @@ export function usePlayerRankings(seriesId?: number | null) {
 
       setPlayers(playersWithStats);
     } catch (err) {
+      console.error('usePlayerRankings fetch error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch players');
     } finally {
       setLoading(false);
