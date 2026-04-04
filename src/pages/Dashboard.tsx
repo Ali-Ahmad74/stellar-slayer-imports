@@ -507,6 +507,11 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        {/* Activity Feed */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.48 }} className="mb-8">
+          <ActivityFeed />
+        </motion.div>
+
         {/* Team Achievements & Partnerships */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mb-8">
           <TeamAchievements players={players.map(p => ({ id: p.id, name: p.name, photo_url: p.photo_url }))} />
