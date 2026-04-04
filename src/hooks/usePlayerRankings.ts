@@ -386,11 +386,27 @@ export function usePlayerRankings(seriesId?: number | null) {
   };
 
   useEffect(() => {
-    fetchPlayers();
+    let retryTimeout: ReturnType<typeof setTimeout>;
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const fetchWithRetry = async () => {
+      try {
+        await fetchPlayers();
+      } catch {
+        if (retryCount < maxRetries) {
+          retryCount++;
+          retryTimeout = setTimeout(fetchWithRetry, 2000 * retryCount);
+        }
+      }
+    };
+
+    fetchWithRetry();
 
     // Subscribe to realtime updates
+    const channelName = seriesId ? `players-realtime-series-${seriesId}` : `players-realtime-${Math.random().toString(36).substring(7)}`;
     const playersChannel = supabase
-      .channel(seriesId ? `players-realtime-series-${seriesId}` : 'players-realtime')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => {
         fetchPlayers();
       })
@@ -412,6 +428,7 @@ export function usePlayerRankings(seriesId?: number | null) {
       .subscribe();
 
     return () => {
+      clearTimeout(retryTimeout);
       supabase.removeChannel(playersChannel);
     };
   }, [seriesId]);
