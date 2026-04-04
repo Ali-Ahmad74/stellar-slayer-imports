@@ -248,11 +248,14 @@ const Dashboard = () => {
               Comprehensive overview of team performance
             </p>
           </div>
-          <SeasonFilter 
-            years={years} 
-            selectedYear={selectedYear} 
-            onYearChange={setSelectedYear} 
-          />
+          <div className="flex items-center gap-2">
+            {isAdmin && <BackupExportButton />}
+            <SeasonFilter 
+              years={years} 
+              selectedYear={selectedYear} 
+              onYearChange={setSelectedYear} 
+            />
+          </div>
         </motion.div>
 
         {/* Key Metrics */}
