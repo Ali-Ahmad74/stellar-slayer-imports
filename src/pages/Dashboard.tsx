@@ -8,6 +8,9 @@ import { usePlayerRankings } from '@/hooks/usePlayerRankings';
 import { Loader2, Trophy, Target, TrendingUp, Users, Calendar, Zap, Award, Activity, MapPin, Flame, ArrowUp, ArrowDown } from 'lucide-react';
 import { TeamAchievements } from '@/components/TeamAchievements';
 import { TeamRecords } from '@/components/TeamRecords';
+import { ActivityFeed } from '@/components/ActivityFeed';
+import { BackupExportButton } from '@/components/BackupExportButton';
+import { useAuth } from '@/hooks/useAuth';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, BarChart, Bar, Legend, LineChart, Line
