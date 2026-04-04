@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { GitCompare, X, Plus, Trophy } from 'lucide-react';
 import { Header } from '@/components/Header';
