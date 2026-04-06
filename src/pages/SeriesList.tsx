@@ -85,7 +85,7 @@ export default function SeriesList() {
     fetchData();
 
     const channel = supabase
-      .channel("series-list-realtime")
+      .channel(`series-list-realtime-${Math.random().toString(36).substring(7)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "series" }, fetchData)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, fetchData)
       .subscribe();

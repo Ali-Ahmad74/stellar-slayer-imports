@@ -157,7 +157,7 @@ export function useFieldingRankingsBySeason(seasonId: string | null) {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('fielding-rankings-realtime')
+      .channel(`fielding-rankings-realtime-${Math.random().toString(36).substring(7)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fielding_inputs' }, () => {
         fetchRankings();
       })
