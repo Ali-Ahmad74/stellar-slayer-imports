@@ -316,7 +316,7 @@ export function useOverallRankingsBySeason(seasonId: string | null) {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel(`overall-rankings-realtime-${seasonId || 'all'}`)
+      .channel(`overall-rankings-realtime-${seasonId || 'all'}-${Math.random().toString(36).substring(7)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'batting_inputs' }, fetchRankings)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bowling_inputs' }, fetchRankings)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fielding_inputs' }, fetchRankings)

@@ -327,7 +327,7 @@ export default function SeriesDetail() {
     fetchData();
 
     const channel = supabase
-      .channel(`series-detail-${seriesId}`)
+      .channel(`series-detail-${seriesId}-${Math.random().toString(36).substring(7)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "series" }, fetchData)
       .on("postgres_changes", { event: "*", schema: "public", table: "matches" }, fetchData)
       .on("postgres_changes", { event: "*", schema: "public", table: "batting_inputs" }, fetchData)
