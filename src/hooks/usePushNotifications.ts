@@ -87,7 +87,6 @@ export function usePushNotifications() {
 
   const doSubscribe = async (reg: ServiceWorkerRegistration, publicKey: string) => {
     const sub = await reg.pushManager.subscribe({
-      userApplicationServerKey: urlBase64ToUint8Array(publicKey),
       applicationServerKey: urlBase64ToUint8Array(publicKey),
       userVisibleOnly: true,
     });
