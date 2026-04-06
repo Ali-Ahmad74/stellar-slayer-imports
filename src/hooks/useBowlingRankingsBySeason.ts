@@ -193,7 +193,7 @@ export function useBowlingRankingsBySeason(seasonId: string | null) {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('bowling-rankings-realtime')
+      .channel(`bowling-rankings-realtime-${Math.random().toString(36).substring(7)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'bowling_inputs' }, () => {
         fetchRankings();
       })

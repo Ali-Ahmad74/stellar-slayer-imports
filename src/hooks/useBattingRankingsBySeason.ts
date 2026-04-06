@@ -190,7 +190,7 @@ export function useBattingRankingsBySeason(seasonId: string | null) {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('batting-rankings-realtime')
+      .channel(`batting-rankings-realtime-${Math.random().toString(36).substring(7)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'batting_inputs' }, () => {
         fetchRankings();
       })

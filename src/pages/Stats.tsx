@@ -36,7 +36,7 @@ const Stats = () => {
     fetchMatches();
 
     // Subscribe to realtime updates
-    const matchesChannel = supabase.channel('matches-realtime').on('postgres_changes', {
+    const matchesChannel = supabase.channel(`matches-realtime-${Math.random().toString(36).substring(7)}`).on('postgres_changes', {
       event: '*',
       schema: 'public',
       table: 'matches'
