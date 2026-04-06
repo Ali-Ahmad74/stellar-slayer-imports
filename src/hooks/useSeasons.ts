@@ -37,8 +37,9 @@ export function useSeasons() {
   useEffect(() => {
     fetchSeasons();
 
+    const channelName = `seasons-realtime-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel('seasons-realtime')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'seasons' }, () => {
         fetchSeasons();
       })

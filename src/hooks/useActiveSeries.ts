@@ -36,8 +36,9 @@ export function useActiveSeries() {
 
     fetchActive();
 
+    const channelName = `active-series-realtime-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel("active-series-realtime")
+      .channel(channelName)
       .on("postgres_changes", { event: "*", schema: "public", table: "series" }, fetchActive)
       .subscribe();
 
