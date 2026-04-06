@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, Smartphone } from "lucide-react";
+import { X, Download, Smartphone, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -12,51 +13,71 @@ export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showPrompt, setShowPrompt] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const { isSupported: pushSupported, isSubscribed, subscribe } = usePushNotifications();
 
   useEffect(() => {
-    // Check if already installed or dismissed
     const dismissed = localStorage.getItem("pwa-install-dismissed");
     const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
     
     if (dismissed || isStandalone) {
+      // Still try to subscribe to push if not subscribed
+      if (pushSupported && !isSubscribed && Notification.permission === 'default') {
+        const timer = setTimeout(() => {
+          setShowPrompt(true);
+        }, 5000);
+        return () => clearTimeout(timer);
+      }
       return;
     }
 
-    // Check if iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(isIOSDevice);
 
-    // For iOS, show prompt after a delay
     if (isIOSDevice) {
-      const timer = setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000);
+      const timer = setTimeout(() => setShowPrompt(true), 3000);
       return () => clearTimeout(timer);
     }
 
-    // For Android/Chrome, listen for beforeinstallprompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      // Show prompt after a delay
-      setTimeout(() => {
-        setShowPrompt(true);
-      }, 3000);
+      setTimeout(() => setShowPrompt(true), 3000);
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
+
+    // If no install prompt fires after 5s, still show for notifications
+    const fallbackTimer = setTimeout(() => {
+      if (pushSupported && !isSubscribed) {
+        setShowPrompt(true);
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      clearTimeout(fallbackTimer);
+    };
+  }, [pushSupported, isSubscribed]);
 
   const handleInstall = async () => {
     if (deferredPrompt) {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
       if (outcome === "accepted") {
+        // After install, ask for notification permission
+        if (pushSupported && !isSubscribed) {
+          await subscribe();
+        }
         setShowPrompt(false);
       }
       setDeferredPrompt(null);
     }
+  };
+
+  const handleEnableNotifications = async () => {
+    await subscribe();
+    setShowPrompt(false);
+    localStorage.setItem("pwa-install-dismissed", "true");
   };
 
   const handleDismiss = () => {
@@ -65,6 +86,12 @@ export function PWAInstallPrompt() {
   };
 
   if (!showPrompt) return null;
+
+  const showInstallButtons = !isIOS && deferredPrompt;
+  const showNotificationButton = pushSupported && !isSubscribed && Notification.permission !== 'denied';
+
+  // Nothing to show
+  if (!showInstallButtons && !showNotificationButton && !isIOS) return null;
 
   return (
     <AnimatePresence>
@@ -77,14 +104,22 @@ export function PWAInstallPrompt() {
         <div className="bg-card border border-border rounded-xl shadow-lg p-4 space-y-3">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-lg bg-primary/10">
-              <Smartphone className="w-6 h-6 text-primary" />
+              {showInstallButtons ? (
+                <Smartphone className="w-6 h-6 text-primary" />
+              ) : (
+                <Bell className="w-6 h-6 text-primary" />
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-foreground">Install App</h3>
+              <h3 className="font-semibold text-foreground">
+                {showInstallButtons ? "Install App" : "Enable Notifications"}
+              </h3>
               <p className="text-sm text-muted-foreground">
                 {isIOS
                   ? "Tap Share → Add to Home Screen to install"
-                  : "Install for quick access and offline use"}
+                  : showInstallButtons
+                  ? "Install for quick access & get match updates"
+                  : "Get notified about new matches, rankings & achievements"}
               </p>
             </div>
             <button
@@ -96,16 +131,16 @@ export function PWAInstallPrompt() {
             </button>
           </div>
 
-          {!isIOS && deferredPrompt && (
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={handleDismiss}
-              >
-                Not now
-              </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={handleDismiss}
+            >
+              Not now
+            </Button>
+            {showInstallButtons ? (
               <Button
                 size="sm"
                 className="flex-1 gap-2"
@@ -114,8 +149,17 @@ export function PWAInstallPrompt() {
                 <Download className="w-4 h-4" />
                 Install
               </Button>
-            </div>
-          )}
+            ) : showNotificationButton ? (
+              <Button
+                size="sm"
+                className="flex-1 gap-2"
+                onClick={handleEnableNotifications}
+              >
+                <Bell className="w-4 h-4" />
+                Enable
+              </Button>
+            ) : null}
+          </div>
 
           {isIOS && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
