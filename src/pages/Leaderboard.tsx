@@ -181,15 +181,38 @@ const Leaderboard = () => {
   const displayData = getDisplayData();
   const isCategoryLoading = activeTab === 'overall' ? (overallSeasonId !== 'all' && overallLoading) : activeTab === 'batting' ? battingLoading : activeTab === 'bowling' ? bowlingLoading : activeTab === 'fielding' ? fieldingLoading : false;
 
-  // Get top 3 for podium display (only show when no season filter on overall)
-  const topThree = overallSeasonId === 'all' ? leaderboardData.slice(0, 3) : overallRankings.slice(0, 3);
+  // Get top 3 for podium display based on active tab
+  const getTopThree = () => {
+    switch (activeTab) {
+      case 'batting':
+        return battingRankings.slice(0, 3);
+      case 'bowling':
+        return bowlingRankings.slice(0, 3);
+      case 'fielding':
+        return fieldingRankings.slice(0, 3);
+      default:
+        return overallSeasonId === 'all' ? leaderboardData.slice(0, 3) : overallRankings.slice(0, 3);
+    }
+  };
+  const topThree = getTopThree();
   
   // Helper to get points for podium (works with both data types)
-  const getPodiumPoints = (player: typeof topThree[0]) => {
-    if ('points' in player) {
+  const getPodiumPoints = (player: any) => {
+    if ('points' in player && typeof player.points === 'object') {
       return player.points.totalPoints;
     }
-    return player.totalPoints;
+    if ('rating' in player) return player.rating;
+    if ('totalPoints' in player) return player.totalPoints;
+    return 0;
+  };
+
+  const getPodiumLabel = () => {
+    switch (activeTab) {
+      case 'batting': return 'runs';
+      case 'bowling': return 'wkts';
+      case 'fielding': return 'pts';
+      default: return 'pts';
+    }
   };
   const getTrendIcon = (change?: number) => {
     if (!change || change === 0) return <Minus className="w-4 h-4 text-muted-foreground" />;
