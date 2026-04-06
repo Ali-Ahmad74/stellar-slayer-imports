@@ -181,15 +181,38 @@ const Leaderboard = () => {
   const displayData = getDisplayData();
   const isCategoryLoading = activeTab === 'overall' ? (overallSeasonId !== 'all' && overallLoading) : activeTab === 'batting' ? battingLoading : activeTab === 'bowling' ? bowlingLoading : activeTab === 'fielding' ? fieldingLoading : false;
 
-  // Get top 3 for podium display (only show when no season filter on overall)
-  const topThree = overallSeasonId === 'all' ? leaderboardData.slice(0, 3) : overallRankings.slice(0, 3);
+  // Get top 3 for podium display based on active tab
+  const getTopThree = () => {
+    switch (activeTab) {
+      case 'batting':
+        return battingRankings.slice(0, 3);
+      case 'bowling':
+        return bowlingRankings.slice(0, 3);
+      case 'fielding':
+        return fieldingRankings.slice(0, 3);
+      default:
+        return overallSeasonId === 'all' ? leaderboardData.slice(0, 3) : overallRankings.slice(0, 3);
+    }
+  };
+  const topThree = getTopThree();
   
   // Helper to get points for podium (works with both data types)
-  const getPodiumPoints = (player: typeof topThree[0]) => {
-    if ('points' in player) {
+  const getPodiumPoints = (player: any) => {
+    if ('points' in player && typeof player.points === 'object') {
       return player.points.totalPoints;
     }
-    return player.totalPoints;
+    if ('rating' in player) return player.rating;
+    if ('totalPoints' in player) return player.totalPoints;
+    return 0;
+  };
+
+  const getPodiumLabel = () => {
+    switch (activeTab) {
+      case 'batting': return 'runs';
+      case 'bowling': return 'wkts';
+      case 'fielding': return 'pts';
+      default: return 'pts';
+    }
   };
   const getTrendIcon = (change?: number) => {
     if (!change || change === 0) return <Minus className="w-4 h-4 text-muted-foreground" />;
@@ -332,7 +355,7 @@ const Leaderboard = () => {
           </div>
 
           {/* Top 3 Podium */}
-          {topThree.length >= 3 && activeTab === 'overall' && <motion.div initial={{
+          {topThree.length >= 3 && <motion.div initial={{
           opacity: 0,
           scale: 0.95
         }} animate={{
@@ -351,7 +374,7 @@ const Leaderboard = () => {
                       <p className="text-2xl font-display font-bold text-gray-600 dark:text-gray-300">
                         {getPodiumPoints(topThree[1])}
                       </p>
-                      <p className="text-xs text-muted-foreground">pts</p>
+                      <p className="text-xs text-muted-foreground">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-gray-400 text-white py-2 text-2xl font-bold">2</div>
                   </Link>
@@ -369,7 +392,7 @@ const Leaderboard = () => {
                       <p className="text-3xl font-display font-bold text-yellow-700 dark:text-yellow-200">
                         {getPodiumPoints(topThree[0])}
                       </p>
-                      <p className="text-xs text-yellow-700/70 dark:text-yellow-200/70">pts</p>
+                      <p className="text-xs text-yellow-700/70 dark:text-yellow-200/70">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-yellow-500 text-white py-3 text-3xl font-bold">1</div>
                   </Link>
@@ -386,7 +409,7 @@ const Leaderboard = () => {
                       <p className="text-xl font-display font-bold text-orange-700 dark:text-orange-200">
                         {getPodiumPoints(topThree[2])}
                       </p>
-                      <p className="text-xs text-muted-foreground">pts</p>
+                      <p className="text-xs text-muted-foreground">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-orange-500 text-white py-2 text-xl font-bold">3</div>
                   </Link>

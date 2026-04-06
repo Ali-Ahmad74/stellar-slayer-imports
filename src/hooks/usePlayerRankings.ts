@@ -404,7 +404,7 @@ export function usePlayerRankings(seriesId?: number | null) {
     fetchWithRetry();
 
     // Subscribe to realtime updates
-    const channelName = seriesId ? `players-realtime-series-${seriesId}` : `players-realtime-${Math.random().toString(36).substring(7)}`;
+    const channelName = `players-realtime-${Math.random().toString(36).substring(7)}`;
     const playersChannel = supabase
       .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'players' }, () => {
