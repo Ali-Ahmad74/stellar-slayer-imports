@@ -153,8 +153,27 @@ const Admin = () => {
         player_of_the_match_id: data.player_of_the_match_id,
         team_id: teamId,
       });
-      if (error) toast.error('Failed to add match: ' + error.message);
-      else { toast.success('Match added!'); setMatchDialogOpen(false); fetchData(); }
+      if (error) {
+        toast.error('Failed to add match: ' + error.message);
+      } else {
+        toast.success('Match added!');
+        setMatchDialogOpen(false);
+        fetchData();
+        // Send push notification for new match
+        const opponentText = data.opponent_name ? ` vs ${data.opponent_name}` : '';
+        const resultText = data.result ? ` - ${data.result}` : '';
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title: '🏏 New Match Added!',
+              body: `Match${opponentText}${resultText}. Check the latest rankings!`,
+              url: '/matches',
+            },
+          });
+        } catch (e) {
+          console.error('Push notification failed:', e);
+        }
+      }
     }
     setSaving(false);
     setEditingMatch(undefined);
