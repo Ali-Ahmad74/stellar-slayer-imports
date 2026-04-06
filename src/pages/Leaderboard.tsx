@@ -355,7 +355,7 @@ const Leaderboard = () => {
           </div>
 
           {/* Top 3 Podium */}
-          {topThree.length >= 3 && activeTab === 'overall' && <motion.div initial={{
+          {topThree.length >= 3 && <motion.div initial={{
           opacity: 0,
           scale: 0.95
         }} animate={{
@@ -374,7 +374,7 @@ const Leaderboard = () => {
                       <p className="text-2xl font-display font-bold text-gray-600 dark:text-gray-300">
                         {getPodiumPoints(topThree[1])}
                       </p>
-                      <p className="text-xs text-muted-foreground">pts</p>
+                      <p className="text-xs text-muted-foreground">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-gray-400 text-white py-2 text-2xl font-bold">2</div>
                   </Link>
@@ -392,7 +392,7 @@ const Leaderboard = () => {
                       <p className="text-3xl font-display font-bold text-yellow-700 dark:text-yellow-200">
                         {getPodiumPoints(topThree[0])}
                       </p>
-                      <p className="text-xs text-yellow-700/70 dark:text-yellow-200/70">pts</p>
+                      <p className="text-xs text-yellow-700/70 dark:text-yellow-200/70">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-yellow-500 text-white py-3 text-3xl font-bold">1</div>
                   </Link>
@@ -409,7 +409,7 @@ const Leaderboard = () => {
                       <p className="text-xl font-display font-bold text-orange-700 dark:text-orange-200">
                         {getPodiumPoints(topThree[2])}
                       </p>
-                      <p className="text-xs text-muted-foreground">pts</p>
+                      <p className="text-xs text-muted-foreground">{getPodiumLabel()}</p>
                     </motion.div>
                     <div className="bg-orange-500 text-white py-2 text-xl font-bold">3</div>
                   </Link>
