@@ -58,16 +58,12 @@ export function Header() {
               transition={{ type: "spring", stiffness: 200 }}
               className="text-3xl md:text-4xl"
             >
-              {teamSettings?.team_logo_url ? (
-                <img
-                  src={teamSettings.team_logo_url}
-                  alt={`${teamName} logo`}
-                  className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-border"
-                  loading="lazy"
-                />
-              ) : (
-                <span aria-hidden>🏏</span>
-              )}
+              <img
+                src={teamSettings?.team_logo_url || '/images/team-logo.webp'}
+                alt={`${teamName} logo`}
+                className="h-10 w-10 md:h-12 md:w-12 rounded-full object-cover border border-border"
+                loading="lazy"
+              />
             </motion.div>
             <div>
               <h1 className="text-xl md:text-2xl font-bold tracking-wider uppercase text-foreground font-display group-hover:text-primary transition-colors">
