@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { DEFAULT_TEAM_LOGO_URL } from '@/lib/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -180,7 +181,7 @@ const MatchHistory = () => {
     }));
     exportMatches(exportData, {
       teamName: teamSettings?.team_name,
-      logoUrl: teamSettings?.team_logo_url,
+      logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
       watermarkHandle: teamSettings?.watermark_handle,
     });
   };
@@ -263,7 +264,7 @@ const MatchHistory = () => {
 
     exportDetailedMatches(detailedData, {
       teamName: teamSettings?.team_name,
-      logoUrl: teamSettings?.team_logo_url,
+      logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
       watermarkHandle: teamSettings?.watermark_handle,
     });
   };
@@ -541,7 +542,7 @@ const MatchHistory = () => {
                           }}
                           exportOptions={{
                             teamName: teamSettings?.team_name,
-                            logoUrl: teamSettings?.team_logo_url,
+                            logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
                             watermarkHandle: teamSettings?.watermark_handle,
                           }}
                         />

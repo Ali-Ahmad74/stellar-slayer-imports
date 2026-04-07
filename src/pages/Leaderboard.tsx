@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DEFAULT_TEAM_LOGO_URL } from '@/lib/constants';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Trophy, TrendingUp, TrendingDown, Minus, RefreshCw, Share2 } from 'lucide-react';
@@ -123,7 +124,7 @@ const Leaderboard = () => {
     });
     exportPlayerStats(exportData, { 
       teamName: teamSettings?.team_name, 
-      logoUrl: teamSettings?.team_logo_url 
+      logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL 
     });
   };
   const getLeaderboardData = () => {

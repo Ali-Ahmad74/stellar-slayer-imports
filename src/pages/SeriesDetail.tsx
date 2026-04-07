@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_TEAM_LOGO_URL } from '@/lib/constants';
 import { Link, useParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -418,7 +419,7 @@ export default function SeriesDetail() {
                     })),
                   }, {
                     teamName: teamSettings?.team_name,
-                    logoUrl: teamSettings?.team_logo_url,
+                    logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
                     watermarkHandle: teamSettings?.watermark_handle,
                   });
                 } finally { setExporting(false); }
@@ -641,7 +642,7 @@ export default function SeriesDetail() {
                             }}
                             exportOptions={{
                               teamName: teamSettings?.team_name,
-                              logoUrl: teamSettings?.team_logo_url,
+                              logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
                               watermarkHandle: teamSettings?.watermark_handle,
                             }}
                           />
