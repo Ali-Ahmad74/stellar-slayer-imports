@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { RoleBadge } from '@/components/RoleBadge';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CSVImportDialog } from '@/components/CSVImportDialog';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 import { PlayerRole } from '@/types/cricket';
 import { AdminPlayer } from './types';
 
