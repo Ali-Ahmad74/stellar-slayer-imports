@@ -49,13 +49,21 @@ export const TeamLogoUpload = ({ currentLogoUrl, onLogoChange, isAdmin }: TeamLo
         .from('player-photos')
         .getPublicUrl(filePath);
 
-      // Update team_settings table
-      const { error: updateError } = await supabase
-        .from('team_settings')
-        .update({ team_logo_url: publicUrl, updated_at: new Date().toISOString() })
-        .eq('id', 1);
+      // Update teams table
+      const { data: teamData } = await supabase
+        .from('teams')
+        .select('id')
+        .limit(1)
+        .maybeSingle();
 
-      if (updateError) throw updateError;
+      if (teamData) {
+        const { error: updateError } = await supabase
+          .from('teams')
+          .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+          .eq('id', teamData.id);
+
+        if (updateError) throw updateError;
+      }
 
       onLogoChange(publicUrl);
       toast.success('Team logo updated successfully!');
