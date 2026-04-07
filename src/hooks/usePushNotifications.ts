@@ -18,6 +18,16 @@ export function usePushNotifications() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
 
   useEffect(() => {
+    // Don't register SW in iframe/preview environments
+    const isInIframe = (() => { try { return window.self !== window.top; } catch { return true; } })();
+    const isPreview = window.location.hostname.includes('id-preview--') || window.location.hostname.includes('lovableproject.com');
+    
+    if (isInIframe || isPreview) {
+      // Unregister any stale SWs in preview
+      navigator.serviceWorker?.getRegistrations().then(regs => regs.forEach(r => r.unregister()));
+      return;
+    }
+
     const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
     setIsSupported(supported);
     if (supported) {
