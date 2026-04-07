@@ -180,7 +180,7 @@ const MatchHistory = () => {
     }));
     exportMatches(exportData, {
       teamName: teamSettings?.team_name,
-      logoUrl: teamSettings?.team_logo_url,
+      logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
       watermarkHandle: teamSettings?.watermark_handle,
     });
   };
@@ -263,7 +263,7 @@ const MatchHistory = () => {
 
     exportDetailedMatches(detailedData, {
       teamName: teamSettings?.team_name,
-      logoUrl: teamSettings?.team_logo_url,
+      logoUrl: teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL,
       watermarkHandle: teamSettings?.watermark_handle,
     });
   };
