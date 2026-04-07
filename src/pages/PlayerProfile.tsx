@@ -1,4 +1,5 @@
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { DEFAULT_TEAM_LOGO_URL } from '@/lib/constants';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2, Calendar, Download, GitCompare } from 'lucide-react';
 import { useEffect, useState } from 'react';
