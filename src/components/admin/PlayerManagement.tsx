@@ -72,12 +72,8 @@ export function PlayerManagement({ players, isAdmin, loadingData, teamId, onAddP
                     {isAdmin && (
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Tooltip><TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => onEditPlayer(player)}><Edit className="w-4 h-4" /></Button>
-                          </TooltipTrigger><TooltipContent>Edit player</TooltipContent></Tooltip>
-                          <Tooltip><TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => onDeletePlayer(player.id, player.name)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
-                          </TooltipTrigger><TooltipContent>Delete player</TooltipContent></Tooltip>
+                          <Button variant="ghost" size="icon" onClick={() => onEditPlayer(player)} title="Edit player"><Edit className="w-4 h-4" /></Button>
+                          <Button variant="ghost" size="icon" onClick={() => onDeletePlayer(player.id, player.name)} title="Delete player"><Trash2 className="w-4 h-4 text-destructive" /></Button>
                         </div>
                       </TableCell>
                     )}
