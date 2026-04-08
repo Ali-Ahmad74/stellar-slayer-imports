@@ -52,6 +52,17 @@ export interface MatchExportOptions {
   watermarkHandle?: string | null;
 }
 
+function getImageFormat(dataUrl: string): "PNG" | "JPEG" | "WEBP" {
+  const match = dataUrl.match(/^data:image\/(png|jpe?g|webp)/i)?.[1]?.toLowerCase();
+  if (match === "png") return "PNG";
+  if (match === "webp") return "WEBP";
+  return "JPEG";
+}
+
+function addDataUrlImage(doc: jsPDF, dataUrl: string, x: number, y: number, width: number, height: number) {
+  doc.addImage(dataUrl, getImageFormat(dataUrl), x, y, width, height);
+}
+
 async function loadImageAsBase64(url: string): Promise<string | null> {
   try {
     const response = await fetch(url);
@@ -81,7 +92,7 @@ export async function exportSingleMatchPDF(
     const logoBase64 = await loadImageAsBase64(options.logoUrl);
     if (logoBase64) {
       try {
-        doc.addImage(logoBase64, "PNG", 14, 10, 18, 18);
+        addDataUrlImage(doc, logoBase64, 14, 10, 18, 18);
         textStartX = 38;
       } catch {}
     }
@@ -120,6 +131,66 @@ export async function exportSingleMatchPDF(
   doc.setTextColor(0, 0, 0);
   
   currentY += 30;
+
+  const standoutCards = [
+    match.batting.length > 0
+      ? {
+          title: "Top Batter",
+          name: [...match.batting].sort((a, b) => b.runs - a.runs || a.balls - b.balls)[0].player_name,
+          stat: `${[...match.batting].sort((a, b) => b.runs - a.runs || a.balls - b.balls)[0].runs} runs`,
+          photoUrl: [...match.batting].sort((a, b) => b.runs - a.runs || a.balls - b.balls)[0].photo_url,
+        }
+      : null,
+    match.bowling.length > 0
+      ? {
+          title: "Top Bowler",
+          name: [...match.bowling].sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy))[0].player_name,
+          stat: `${[...match.bowling].sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy))[0].wickets} wickets`,
+          photoUrl: [...match.bowling].sort((a, b) => b.wickets - a.wickets || Number(a.economy) - Number(b.economy))[0].photo_url,
+        }
+      : null,
+    match.fielding.length > 0
+      ? (() => {
+          const bestFielder = [...match.fielding].sort(
+            (a, b) => (b.catches + b.runouts + b.stumpings) - (a.catches + a.runouts + a.stumpings)
+          )[0];
+          return {
+            title: "Top Fielder",
+            name: bestFielder.player_name,
+            stat: `${bestFielder.catches + bestFielder.runouts + bestFielder.stumpings} impacts`,
+            photoUrl: bestFielder.photo_url,
+          };
+        })()
+      : null,
+  ].filter(Boolean) as { title: string; name: string; stat: string; photoUrl: string | null }[];
+
+  if (standoutCards.length > 0) {
+    const gap = 6;
+    const cardWidth = (182 - gap * (standoutCards.length - 1)) / standoutCards.length;
+    for (const [index, card] of standoutCards.entries()) {
+      const cardX = 14 + index * (cardWidth + gap);
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(cardX, currentY, cardWidth, 24, 3, 3, "FD");
+      if (card.photoUrl) {
+        const photoBase64 = await loadImageAsBase64(card.photoUrl);
+        if (photoBase64) {
+          try {
+            addDataUrlImage(doc, photoBase64, cardX + 3, currentY + 4, 12, 12);
+          } catch {}
+        }
+      }
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text(card.title, cardX + 18, currentY + 8);
+      doc.setFont("helvetica", "normal");
+      doc.text(card.name, cardX + 18, currentY + 13);
+      doc.setTextColor(71, 85, 105);
+      doc.text(card.stat, cardX + 18, currentY + 18);
+      doc.setTextColor(0, 0, 0);
+    }
+    currentY += 32;
+  }
 
   // Batting Scorecard
   if (match.batting.length > 0) {

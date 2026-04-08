@@ -21,6 +21,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PlayerRole } from '@/types/cricket';
+import { insertWithSafeNumericId } from '@/lib/safe-numeric-insert';
 
 import { PlayerManagement } from '@/components/admin/PlayerManagement';
 import { MatchManagement } from '@/components/admin/MatchManagement';
@@ -116,7 +117,7 @@ const Admin = () => {
       if (error) toast.error('Failed to update player: ' + error.message);
       else { toast.success('Player updated!'); setPlayerDialogOpen(false); fetchData(); }
     } else {
-      const { error } = await supabase.from('players').insert({
+      const { error } = await insertWithSafeNumericId('players', {
         name: data.name, role: data.role,
         batting_style: data.batting_style, bowling_style: data.bowling_style,
         photo_url: data.photo_url, team_id: teamId,
@@ -145,7 +146,7 @@ const Admin = () => {
       if (error) toast.error('Failed to update match: ' + error.message);
       else { toast.success('Match updated!'); setMatchDialogOpen(false); fetchData(); }
     } else {
-      const { error } = await supabase.from('matches').insert({
+      const { error } = await insertWithSafeNumericId('matches', {
         match_date: data.match_date, overs: data.overs, venue: data.venue,
         tournament_id: data.tournament_id, series_id: data.series_id,
         opponent_name: data.opponent_name, our_score: data.our_score,
@@ -193,7 +194,7 @@ const Admin = () => {
       if (error) toast.error('Failed to update season: ' + error.message);
       else { toast.success('Season updated!'); setSeasonDialogOpen(false); fetchData(); }
     } else {
-      const { error } = await supabase.from('seasons').insert({
+      const { error } = await insertWithSafeNumericId('seasons', {
         name: data.name, year: data.year, start_date: data.start_date, end_date: data.end_date, is_active: data.is_active, team_id: teamId,
       });
       if (error) toast.error('Failed to add season: ' + error.message);
@@ -218,7 +219,7 @@ const Admin = () => {
       if (error) toast.error('Failed to update tournament: ' + error.message);
       else { toast.success('Tournament updated!'); setTournamentDialogOpen(false); fetchData(); }
     } else {
-      const { error } = await supabase.from('tournaments').insert({
+      const { error } = await insertWithSafeNumericId('tournaments', {
         name: data.name, description: data.description, start_date: data.start_date, end_date: data.end_date,
         venue: data.venue, tournament_type: data.tournament_type, is_active: data.is_active, team_id: teamId,
       });
@@ -244,7 +245,7 @@ const Admin = () => {
       if (error) toast.error('Failed to update series: ' + error.message);
       else { toast.success('Series updated!'); setSeriesDialogOpen(false); fetchData(); }
     } else {
-      const { error } = await supabase.from('series').insert({
+      const { error } = await insertWithSafeNumericId('series', {
         name: data.name, description: data.description, start_date: data.start_date, end_date: data.end_date,
         venue: data.venue, is_active: data.is_active, team_id: teamId,
       });

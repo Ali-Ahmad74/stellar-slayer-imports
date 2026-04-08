@@ -13,6 +13,7 @@ import {
 import { toast } from "sonner";
 
 import { ShareablePlayerCard } from "@/components/ShareablePlayerCard";
+import { DEFAULT_TEAM_LOGO_URL } from "@/lib/constants";
 import type { PlayerStats } from "@/hooks/usePlayerRankings";
 import type { PlayerRole } from "@/types/cricket";
 import type { ScoringSettings } from "@/hooks/useScoringSettings";
@@ -123,7 +124,7 @@ export function SharePlayerCardDialog({
                 ref={cardRef}
                 player={player}
                 teamName={teamName}
-                teamLogoUrl={teamSettings?.team_logo_url || null}
+                teamLogoUrl={teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL}
                 scoringSettings={scoringSettings}
                 watermarkEnabled={teamSettings?.watermark_enabled || false}
                 watermarkHandle={teamSettings?.watermark_handle || null}

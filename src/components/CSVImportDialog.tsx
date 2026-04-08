@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { supabase } from "@/integrations/supabase/client";
+import { insertManyWithSafeNumericIds } from "@/lib/safe-numeric-insert";
 import { toast } from "sonner";
 
 interface CSVImportDialogProps {
@@ -95,7 +96,8 @@ export function CSVImportDialog({ teamId, onImportComplete }: CSVImportDialogPro
 
     setImporting(true);
     try {
-      const { error } = await supabase.from("players").insert(
+      const { error } = await insertManyWithSafeNumericIds(
+        "players",
         validPlayers.map((p) => ({
           name: p.name,
           role: p.role,

@@ -7,9 +7,9 @@ export interface SeriesExportData {
   venue: string | null;
   dateRange: string | null;
   standing: { played: number; won: number; lost: number; tied: number; other: number };
-  topRuns: { name: string; value: number }[];
-  topWickets: { name: string; value: number }[];
-  topFielding: { name: string; value: number }[];
+  topRuns: { name: string; value: number; photo_url?: string | null }[];
+  topWickets: { name: string; value: number; photo_url?: string | null }[];
+  topFielding: { name: string; value: number; photo_url?: string | null }[];
   matches: {
     date: string;
     opponent: string;
@@ -24,6 +24,17 @@ export interface SeriesExportOptions {
   teamName?: string;
   logoUrl?: string | null;
   watermarkHandle?: string | null;
+}
+
+function getImageFormat(dataUrl: string): "PNG" | "JPEG" | "WEBP" {
+  const match = dataUrl.match(/^data:image\/(png|jpe?g|webp)/i)?.[1]?.toLowerCase();
+  if (match === "png") return "PNG";
+  if (match === "webp") return "WEBP";
+  return "JPEG";
+}
+
+function addDataUrlImage(doc: jsPDF, dataUrl: string, x: number, y: number, width: number, height: number) {
+  doc.addImage(dataUrl, getImageFormat(dataUrl), x, y, width, height);
 }
 
 async function loadImageAsBase64(url: string): Promise<string | null> {
@@ -50,7 +61,7 @@ export async function exportSeriesPDF(data: SeriesExportData, options: SeriesExp
   if (options.logoUrl) {
     const logoBase64 = await loadImageAsBase64(options.logoUrl);
     if (logoBase64) {
-      try { doc.addImage(logoBase64, "PNG", 14, 10, 18, 18); textStartX = 38; } catch {}
+      try { addDataUrlImage(doc, logoBase64, 14, 10, 18, 18); textStartX = 38; } catch {}
     }
   }
 
@@ -85,6 +96,40 @@ export async function exportSeriesPDF(data: SeriesExportData, options: SeriesExp
   if (infoLine) doc.text(infoLine, 20, currentY + 16);
   doc.setTextColor(0, 0, 0);
   currentY += 30;
+
+  const spotlightCards = [
+    data.topRuns[0] ? { title: "Top Runs", row: data.topRuns[0], suffix: "runs" } : null,
+    data.topWickets[0] ? { title: "Top Wickets", row: data.topWickets[0], suffix: "wkts" } : null,
+    data.topFielding[0] ? { title: "Best Fielding", row: data.topFielding[0], suffix: "impacts" } : null,
+  ].filter(Boolean) as { title: string; row: { name: string; value: number; photo_url?: string | null }; suffix: string }[];
+
+  if (spotlightCards.length > 0) {
+    const gap = 6;
+    const cardWidth = (182 - gap * (spotlightCards.length - 1)) / spotlightCards.length;
+    for (const [index, card] of spotlightCards.entries()) {
+      const cardX = 14 + index * (cardWidth + gap);
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(203, 213, 225);
+      doc.roundedRect(cardX, currentY, cardWidth, 24, 3, 3, "FD");
+      if (card.row.photo_url) {
+        const photoBase64 = await loadImageAsBase64(card.row.photo_url);
+        if (photoBase64) {
+          try {
+            addDataUrlImage(doc, photoBase64, cardX + 3, currentY + 4, 12, 12);
+          } catch {}
+        }
+      }
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "bold");
+      doc.text(card.title, cardX + 18, currentY + 8);
+      doc.setFont("helvetica", "normal");
+      doc.text(card.row.name, cardX + 18, currentY + 13);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`${card.row.value} ${card.suffix}`, cardX + 18, currentY + 18);
+      doc.setTextColor(0, 0, 0);
+    }
+    currentY += 32;
+  }
 
   // Top Performers
   const sections = [

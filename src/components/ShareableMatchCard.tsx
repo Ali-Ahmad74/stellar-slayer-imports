@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { Trophy } from "lucide-react";
+import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { cn } from "@/lib/utils";
 
 type CardFormat = "story" | "square" | "wide";
@@ -21,9 +22,9 @@ export interface ShareableMatchCardProps {
     overs: number;
     seriesName?: string;
   };
-  batting: { player_name: string; runs: number; balls: number; fours: number; sixes: number; out: boolean }[];
-  bowling: { player_name: string; overs: string; wickets: number; runs_conceded: number; economy: string }[];
-  fielding: { player_name: string; catches: number; runouts: number; stumpings: number }[];
+  batting: { player_name: string; photo_url?: string | null; runs: number; balls: number; fours: number; sixes: number; out: boolean }[];
+  bowling: { player_name: string; photo_url?: string | null; overs: string; wickets: number; runs_conceded: number; economy: string }[];
+  fielding: { player_name: string; photo_url?: string | null; catches: number; runouts: number; stumpings: number }[];
 }
 
 function formatClass(format: CardFormat) {
@@ -98,7 +99,10 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
               <div className="space-y-1.5">
                 {topBatters.map((b, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{b.player_name}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <PlayerAvatar name={b.player_name} photoUrl={b.photo_url} size="sm" />
+                      <span className="truncate">{b.player_name}</span>
+                    </div>
                     <span className="font-semibold tabular-nums">{b.runs}({b.balls})</span>
                   </div>
                 ))}
@@ -112,7 +116,10 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
               <div className="space-y-1.5">
                 {topBowlers.map((b, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{b.player_name}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <PlayerAvatar name={b.player_name} photoUrl={b.photo_url} size="sm" />
+                      <span className="truncate">{b.player_name}</span>
+                    </div>
                     <span className="font-semibold tabular-nums">{b.wickets}/{b.runs_conceded} ({b.overs})</span>
                   </div>
                 ))}
@@ -126,7 +133,10 @@ export const ShareableMatchCard = forwardRef<HTMLDivElement, ShareableMatchCardP
               <div className="space-y-1.5">
                 {fielding.slice(0, 4).map((f, i) => (
                   <div key={i} className="flex items-center justify-between text-sm">
-                    <span className="truncate">{f.player_name}</span>
+                    <div className="flex min-w-0 items-center gap-2">
+                      <PlayerAvatar name={f.player_name} photoUrl={f.photo_url} size="sm" />
+                      <span className="truncate">{f.player_name}</span>
+                    </div>
                     <span className="font-semibold tabular-nums">
                       {f.catches > 0 && `${f.catches}c `}
                       {f.runouts > 0 && `${f.runouts}ro `}

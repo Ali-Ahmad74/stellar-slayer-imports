@@ -11,6 +11,7 @@ import {
   type SeriesHighlightRow,
   type SeriesHighlightsStanding,
 } from "@/components/ShareableSeriesHighlightsCard";
+import { DEFAULT_TEAM_LOGO_URL } from "@/lib/constants";
 import type { TeamSettings } from "@/hooks/useTeamSettings";
 
 type CardFormat = "story" | "square" | "wide";
@@ -138,7 +139,7 @@ export function ShareSeriesHighlightsDialog({
             ref={cardRef}
             format={format}
             teamName={teamName}
-            teamLogoUrl={teamSettings?.team_logo_url || null}
+            teamLogoUrl={teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL}
             watermarkEnabled={teamSettings?.watermark_enabled || false}
             watermarkHandle={teamSettings?.watermark_handle || null}
             watermarkPosition={teamSettings?.watermark_position || "bottom-right"}
