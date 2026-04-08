@@ -10,6 +10,7 @@ import {
   ShareableMatchCard,
   type ShareableMatchCardProps,
 } from "@/components/ShareableMatchCard";
+import { DEFAULT_TEAM_LOGO_URL } from "@/lib/constants";
 import type { TeamSettings } from "@/hooks/useTeamSettings";
 
 type CardFormat = "story" | "square" | "wide";
@@ -38,9 +39,9 @@ export interface ShareMatchScorecardDialogProps {
     overs: number;
     seriesName?: string;
   };
-  batting: { player_name: string; runs: number; balls: number; fours: number; sixes: number; out: boolean }[];
-  bowling: { player_name: string; overs: string; wickets: number; runs_conceded: number; economy: string }[];
-  fielding: { player_name: string; catches: number; runouts: number; stumpings: number }[];
+  batting: { player_name: string; photo_url?: string | null; runs: number; balls: number; fours: number; sixes: number; out: boolean }[];
+  bowling: { player_name: string; photo_url?: string | null; overs: string; wickets: number; runs_conceded: number; economy: string }[];
+  fielding: { player_name: string; photo_url?: string | null; catches: number; runouts: number; stumpings: number }[];
 }
 
 export function ShareMatchScorecardDialog({
@@ -133,7 +134,7 @@ export function ShareMatchScorecardDialog({
             ref={cardRef}
             format={format}
             teamName={teamName}
-            teamLogoUrl={teamSettings?.team_logo_url || null}
+            teamLogoUrl={teamSettings?.team_logo_url || DEFAULT_TEAM_LOGO_URL}
             watermarkEnabled={teamSettings?.watermark_enabled || false}
             watermarkHandle={teamSettings?.watermark_handle || null}
             watermarkPosition={teamSettings?.watermark_position || "bottom-right"}

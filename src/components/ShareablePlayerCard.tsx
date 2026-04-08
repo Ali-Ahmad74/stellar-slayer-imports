@@ -79,7 +79,14 @@ export const ShareablePlayerCard = forwardRef<HTMLDivElement, ShareablePlayerCar
           {/* Header Section */}
           <div className={`flex items-center ${format === 'wide' ? 'flex-col w-1/3' : 'flex-col'} gap-4`}>
             {/* Team Logo/Name */}
-            <div className="text-center">
+            <div className="text-center flex flex-col items-center gap-2">
+              {teamLogoUrl ? (
+                <img
+                  src={teamLogoUrl}
+                  alt={`${teamName} logo`}
+                  className="h-14 w-14 rounded-full object-cover border border-white/20"
+                />
+              ) : null}
               <span className="text-cyan font-display text-sm tracking-widest uppercase">
                 {teamName}
               </span>

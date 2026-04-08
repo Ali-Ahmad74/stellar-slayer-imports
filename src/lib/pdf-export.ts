@@ -94,6 +94,17 @@ async function loadImageAsBase64(url: string): Promise<string | null> {
   }
 }
 
+function getImageFormat(dataUrl: string): "PNG" | "JPEG" | "WEBP" {
+  const match = dataUrl.match(/^data:image\/(png|jpe?g|webp)/i)?.[1]?.toLowerCase();
+  if (match === "png") return "PNG";
+  if (match === "webp") return "WEBP";
+  return "JPEG";
+}
+
+function addDataUrlImage(doc: jsPDF, dataUrl: string, x: number, y: number, width: number, height: number) {
+  doc.addImage(dataUrl, getImageFormat(dataUrl), x, y, width, height);
+}
+
 /**
  * Add header with optional logo to the PDF
  */
@@ -113,7 +124,7 @@ async function addHeader(
     if (logoBase64) {
       try {
         const logoSize = 18;
-        doc.addImage(logoBase64, "PNG", 14, 10, logoSize, logoSize);
+        addDataUrlImage(doc, logoBase64, 14, 10, logoSize, logoSize);
         textStartX = 14 + logoSize + 6;
       } catch {
         // If logo fails, continue without it
@@ -555,7 +566,7 @@ export async function exportPlayerFullStats(
     if (photoBase64) {
       try {
         const photoSize = 35;
-        doc.addImage(photoBase64, "JPEG", pageWidth - 14 - photoSize, currentY, photoSize, photoSize);
+        addDataUrlImage(doc, photoBase64, pageWidth - 14 - photoSize, currentY, photoSize, photoSize);
         photoEndY = currentY + photoSize + 5;
       } catch {
         // If photo fails, continue without it

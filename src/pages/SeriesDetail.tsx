@@ -406,9 +406,9 @@ export default function SeriesDetail() {
                     venue: series.venue,
                     dateRange,
                     standing,
-                    topRuns: topRuns.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
-                    topWickets: topWickets.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
-                    topFielding: topFielding.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value })),
+                    topRuns: topRuns.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value, photo_url: playersById.get(r.player_id)?.photo_url ?? null })),
+                    topWickets: topWickets.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value, photo_url: playersById.get(r.player_id)?.photo_url ?? null })),
+                    topFielding: topFielding.slice(0, 5).map(r => ({ name: playersById.get(r.player_id)?.name ?? "Unknown", value: r.value, photo_url: playersById.get(r.player_id)?.photo_url ?? null })),
                     matches: matches.map(m => ({
                       date: new Date(m.match_date).toLocaleDateString(),
                       opponent: m.opponent_name || "",

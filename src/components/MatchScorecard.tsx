@@ -236,14 +236,14 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
 
   // Data for share dialog
   const shareBatting = actualBatters.map(b => ({
-    player_name: b.player_name, runs: b.runs, balls: b.balls, fours: b.fours, sixes: b.sixes, out: b.out,
+    player_name: b.player_name, photo_url: b.player_photo_url, runs: b.runs, balls: b.balls, fours: b.fours, sixes: b.sixes, out: b.out,
   }));
   const shareBowling = bowling.map(b => ({
-    player_name: b.player_name, overs: formatOvers(b.balls), wickets: b.wickets, runs_conceded: b.runs_conceded,
+    player_name: b.player_name, photo_url: b.player_photo_url, overs: formatOvers(b.balls), wickets: b.wickets, runs_conceded: b.runs_conceded,
     economy: b.balls > 0 ? (b.runs_conceded / (b.balls / 6)).toFixed(2) : "0.00",
   }));
   const shareFielding = fielding.map(f => ({
-    player_name: f.player_name, catches: f.catches, runouts: f.runouts, stumpings: f.stumpings,
+    player_name: f.player_name, photo_url: f.player_photo_url, catches: f.catches, runouts: f.runouts, stumpings: f.stumpings,
   }));
 
   return (
