@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PlayerRole } from '@/types/cricket';
 import { insertWithSafeNumericId } from '@/lib/safe-numeric-insert';
+import { logAdminActivity } from '@/lib/admin-activity-log';
 
 import { PlayerManagement } from '@/components/admin/PlayerManagement';
 import { MatchManagement } from '@/components/admin/MatchManagement';
@@ -115,7 +116,12 @@ const Admin = () => {
         jersey_number: data.jersey_number, nationality: data.nationality, bio: data.bio,
       } as any).eq('id', data.id);
       if (error) toast.error('Failed to update player: ' + error.message);
-      else { toast.success('Player updated!'); setPlayerDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Player updated!');
+        setPlayerDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'update', entityType: 'player', entityId: data.id, summary: data.name });
+      }
     } else {
       const { error } = await insertWithSafeNumericId('players', {
         name: data.name, role: data.role,
@@ -125,7 +131,12 @@ const Admin = () => {
         jersey_number: data.jersey_number, nationality: data.nationality, bio: data.bio,
       } as any);
       if (error) toast.error('Failed to add player: ' + error.message);
-      else { toast.success('Player added!'); setPlayerDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Player added!');
+        setPlayerDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'create', entityType: 'player', entityId: 'new', summary: data.name });
+      }
     }
     setSaving(false);
     setEditingPlayer(undefined);
@@ -144,7 +155,12 @@ const Admin = () => {
         player_of_the_match_id: data.player_of_the_match_id,
       }).eq('id', data.id);
       if (error) toast.error('Failed to update match: ' + error.message);
-      else { toast.success('Match updated!'); setMatchDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Match updated!');
+        setMatchDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'update', entityType: 'match', entityId: data.id, summary: `vs ${data.opponent_name ?? 'unknown'}` });
+      }
     } else {
       const { error } = await insertWithSafeNumericId('matches', {
         match_date: data.match_date, overs: data.overs, venue: data.venue,
@@ -160,6 +176,7 @@ const Admin = () => {
         toast.success('Match added!');
         setMatchDialogOpen(false);
         fetchData();
+        logAdminActivity({ action: 'create', entityType: 'match', entityId: 'new', summary: `vs ${data.opponent_name ?? 'unknown'} on ${data.match_date}` });
         // Send push notification for new match
         const opponentText = data.opponent_name ? ` vs ${data.opponent_name}` : '';
         const resultText = data.result ? ` - ${data.result}` : '';
@@ -192,13 +209,23 @@ const Admin = () => {
         name: data.name, year: data.year, start_date: data.start_date, end_date: data.end_date, is_active: data.is_active,
       }).eq('id', data.id);
       if (error) toast.error('Failed to update season: ' + error.message);
-      else { toast.success('Season updated!'); setSeasonDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Season updated!');
+        setSeasonDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'update', entityType: 'season', entityId: data.id, summary: data.name });
+      }
     } else {
       const { error } = await insertWithSafeNumericId('seasons', {
         name: data.name, year: data.year, start_date: data.start_date, end_date: data.end_date, is_active: data.is_active, team_id: teamId,
       });
       if (error) toast.error('Failed to add season: ' + error.message);
-      else { toast.success('Season added!'); setSeasonDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Season added!');
+        setSeasonDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'create', entityType: 'season', entityId: 'new', summary: data.name });
+      }
     }
     setSaving(false);
     setEditingSeason(undefined);
@@ -217,14 +244,24 @@ const Admin = () => {
         venue: data.venue, tournament_type: data.tournament_type, is_active: data.is_active,
       }).eq('id', data.id);
       if (error) toast.error('Failed to update tournament: ' + error.message);
-      else { toast.success('Tournament updated!'); setTournamentDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Tournament updated!');
+        setTournamentDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'update', entityType: 'tournament', entityId: data.id, summary: data.name });
+      }
     } else {
       const { error } = await insertWithSafeNumericId('tournaments', {
         name: data.name, description: data.description, start_date: data.start_date, end_date: data.end_date,
         venue: data.venue, tournament_type: data.tournament_type, is_active: data.is_active, team_id: teamId,
       });
       if (error) toast.error('Failed to add tournament: ' + error.message);
-      else { toast.success('Tournament added!'); setTournamentDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Tournament added!');
+        setTournamentDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'create', entityType: 'tournament', entityId: 'new', summary: data.name });
+      }
     }
     setSaving(false);
     setEditingTournament(undefined);
@@ -243,14 +280,24 @@ const Admin = () => {
         venue: data.venue, is_active: data.is_active,
       }).eq('id', data.id);
       if (error) toast.error('Failed to update series: ' + error.message);
-      else { toast.success('Series updated!'); setSeriesDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Series updated!');
+        setSeriesDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'update', entityType: 'series', entityId: data.id, summary: data.name });
+      }
     } else {
       const { error } = await insertWithSafeNumericId('series', {
         name: data.name, description: data.description, start_date: data.start_date, end_date: data.end_date,
         venue: data.venue, is_active: data.is_active, team_id: teamId,
       });
       if (error) toast.error('Failed to add series: ' + error.message);
-      else { toast.success('Series added!'); setSeriesDialogOpen(false); fetchData(); }
+      else {
+        toast.success('Series added!');
+        setSeriesDialogOpen(false);
+        fetchData();
+        logAdminActivity({ action: 'create', entityType: 'series', entityId: 'new', summary: data.name });
+      }
     }
     setSaving(false);
     setEditingSeries(undefined);
@@ -349,7 +396,16 @@ const Admin = () => {
       : 'series';
     const { error } = await supabase.from(table).delete().eq('id', deleteTarget.id);
     if (error) toast.error(`Failed to delete ${deleteTarget.type}: ` + error.message);
-    else { toast.success(`${deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1)} deleted!`); fetchData(); }
+    else {
+      toast.success(`${deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1)} deleted!`);
+      fetchData();
+      logAdminActivity({
+        action: 'delete',
+        entityType: deleteTarget.type as any,
+        entityId: deleteTarget.id,
+        summary: deleteTarget.name,
+      });
+    }
     setSaving(false);
     setDeleteDialogOpen(false);
     setDeleteTarget(null);
