@@ -682,6 +682,10 @@ const Admin = () => {
                 series={series.map(s => ({ id: s.id, name: s.name }))}
               />
             </TabsContent>
+
+            <TabsContent value="activity">
+              <ActivityLog />
+            </TabsContent>
           </Tabs>
         </motion.div>
       </main>
