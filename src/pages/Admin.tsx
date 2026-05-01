@@ -23,6 +23,7 @@ import { toast } from 'sonner';
 import { PlayerRole } from '@/types/cricket';
 import { insertWithSafeNumericId } from '@/lib/safe-numeric-insert';
 import { logAdminActivity } from '@/lib/admin-activity-log';
+import { ActivityLog } from '@/components/admin/ActivityLog';
 
 import { PlayerManagement } from '@/components/admin/PlayerManagement';
 import { MatchManagement } from '@/components/admin/MatchManagement';
