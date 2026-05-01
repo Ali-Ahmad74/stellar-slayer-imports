@@ -593,6 +593,7 @@ const Admin = () => {
                 { value: 'team', icon: Settings, label: 'Team Settings' },
                 { value: 'scoring', icon: Info, label: 'Scoring' },
                 { value: 'health', icon: AlertCircle, label: 'Data Health' },
+                { value: 'activity', icon: Activity, label: 'Activity Log' },
               ].map(tab => (
                 <TabsTrigger key={tab.value} value={tab.value}
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-4 md:px-6 py-2.5 rounded-lg font-semibold">
