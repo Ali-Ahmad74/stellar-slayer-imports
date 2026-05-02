@@ -7,6 +7,7 @@ export interface PositionStat {
   totalRuns: number;
   winningRuns: number;
   innings: number;
+  winningRunsPct: number;
 }
 
 export interface PhaseStat {
@@ -16,6 +17,9 @@ export interface PhaseStat {
   totalRuns: number;
   totalBalls: number;
   strikeRate: number;
+  winningRuns: number;
+  winningInnings: number;
+  winningRunsPct: number;
 }
 
 export function usePlayerPositionAnalysis(playerId: number | null, selectedSeasonId: string) {
@@ -45,7 +49,7 @@ export function usePlayerPositionAnalysis(playerId: number | null, selectedSeaso
         const cur = posMap.get(key) || {
           position: pos,
           positionLabel: pos === 'Unknown' ? 'N/A' : `#${pos}`,
-          totalRuns: 0, winningRuns: 0, innings: 0,
+          totalRuns: 0, winningRuns: 0, innings: 0, winningRunsPct: 0,
         };
         cur.totalRuns += r.runs || 0;
         cur.innings += 1;
@@ -56,19 +60,25 @@ export function usePlayerPositionAnalysis(playerId: number | null, selectedSeaso
         if (a.position === 'Unknown') return 1;
         if (b.position === 'Unknown') return -1;
         return (a.position as number) - (b.position as number);
-      });
+      }).map(p => ({
+        ...p,
+        winningRunsPct: p.totalRuns > 0 ? (p.winningRuns / p.totalRuns) * 100 : 0,
+      }));
       setPositions(posArr);
 
-      // Phase aggregation by balls faced bucket
+      // Phase aggregation — only legal balls, exclude null/invalid (<=0)
+      const legalRows = rows.filter(r => typeof r.balls === 'number' && Number.isFinite(r.balls) && r.balls > 0);
       const buckets = [
         { bucket: 'First 10', range: '1–10 balls', min: 1, max: 10 },
         { bucket: 'Next 20', range: '11–30 balls', min: 11, max: 30 },
         { bucket: 'Established', range: '31+ balls', min: 31, max: Infinity },
       ];
       const phaseArr: PhaseStat[] = buckets.map(b => {
-        const matched = rows.filter(r => (r.balls || 0) >= b.min && (r.balls || 0) <= b.max);
+        const matched = legalRows.filter(r => r.balls >= b.min && r.balls <= b.max);
         const totalRuns = matched.reduce((s, r) => s + (r.runs || 0), 0);
         const totalBalls = matched.reduce((s, r) => s + (r.balls || 0), 0);
+        const winRows = matched.filter(r => r.matches?.result === 'won');
+        const winningRuns = winRows.reduce((s, r) => s + (r.runs || 0), 0);
         return {
           bucket: b.bucket,
           range: b.range,
@@ -76,6 +86,9 @@ export function usePlayerPositionAnalysis(playerId: number | null, selectedSeaso
           totalRuns,
           totalBalls,
           strikeRate: totalBalls > 0 ? (totalRuns / totalBalls) * 100 : 0,
+          winningRuns,
+          winningInnings: winRows.length,
+          winningRunsPct: totalRuns > 0 ? (winningRuns / totalRuns) * 100 : 0,
         };
       });
       setPhases(phaseArr);

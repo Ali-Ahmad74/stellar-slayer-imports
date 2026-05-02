@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, LabelList } from 'recharts';
 import { Trophy, Target } from 'lucide-react';
 import { PositionStat } from '@/hooks/usePlayerPositionAnalysis';
 
@@ -37,7 +37,22 @@ export function PlayerPositionChart({ data }: Props) {
     Total: d.totalRuns,
     Winning: d.winningRuns,
     innings: d.innings,
+    winPct: Number(d.winningRunsPct.toFixed(1)),
   }));
+
+  const PositionTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+      <div className="rounded-lg border border-border bg-card p-3 shadow-lg text-xs space-y-1">
+        <p className="font-semibold text-foreground">Position {d.position}</p>
+        <p className="text-muted-foreground">Innings: <span className="text-foreground font-medium">{d.innings}</span></p>
+        <p className="text-muted-foreground">Total runs: <span className="text-primary font-medium">{d.Total}</span></p>
+        <p className="text-muted-foreground">Winning-cause runs: <span className="text-accent font-medium">{d.Winning}</span></p>
+        <p className="text-muted-foreground">Win contribution: <span className="text-success font-medium">{d.winPct}%</span></p>
+      </div>
+    );
+  };
 
   return (
     <Card variant="elevated">
@@ -74,20 +89,17 @@ export function PlayerPositionChart({ data }: Props) {
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="position" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                formatter={(value: number, name: string, props: any) => {
-                  if (name === 'Total') return [`${value} runs (${props.payload.innings} inn)`, 'Total Runs'];
-                  return [`${value} runs`, 'Winning Cause'];
-                }}
-              />
+              <Tooltip content={<PositionTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar dataKey="Total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Winning" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Winning" fill="hsl(var(--accent))" radius={[4, 4, 0, 0]}>
+                <LabelList
+                  dataKey="winPct"
+                  position="top"
+                  formatter={(v: number) => (v > 0 ? `${v}%` : '')}
+                  style={{ fontSize: 10, fill: 'hsl(var(--success))' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
