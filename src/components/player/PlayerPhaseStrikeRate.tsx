@@ -32,7 +32,24 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
     innings: d.innings,
     runs: d.totalRuns,
     balls: d.totalBalls,
+    winningRuns: d.winningRuns,
+    winningInnings: d.winningInnings,
+    winPct: Number(d.winningRunsPct.toFixed(1)),
   }));
+
+  const PhaseTooltip = ({ active, payload }: any) => {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+      <div className="rounded-lg border border-border bg-card p-3 shadow-lg text-xs space-y-1">
+        <p className="font-semibold text-foreground">{d.phase} <span className="text-muted-foreground font-normal">({d.range})</span></p>
+        <p className="text-muted-foreground">Innings: <span className="text-foreground font-medium">{d.innings}</span> ({d.winningInnings} won)</p>
+        <p className="text-muted-foreground">Runs / Balls: <span className="text-foreground font-medium">{d.runs} / {d.balls}</span></p>
+        <p className="text-muted-foreground">Strike rate: <span className="text-primary font-medium">{d.SR}</span></p>
+        <p className="text-muted-foreground">Winning-cause runs: <span className="text-accent font-medium">{d.winningRuns}</span> ({d.winPct}%)</p>
+      </div>
+    );
+  };
 
   return (
     <Card variant="elevated">
@@ -49,6 +66,7 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
               <p className="text-[11px] text-muted-foreground">{d.phase}</p>
               <p className="text-[10px] text-muted-foreground">{d.range}</p>
               <p className="text-[10px] text-muted-foreground mt-1">{d.innings} inn · {d.runs}r</p>
+              <p className="text-[10px] text-success mt-0.5">{d.winPct}% in wins</p>
             </div>
           ))}
         </div>
@@ -59,17 +77,7 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
               <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="phase" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 10 }} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'hsl(var(--card))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                }}
-                formatter={(value: number, _name: string, props: any) => [
-                  `SR ${value} · ${props.payload.runs} off ${props.payload.balls} (${props.payload.innings} inn)`,
-                  props.payload.range,
-                ]}
-              />
+              <Tooltip content={<PhaseTooltip />} cursor={{ fill: 'hsl(var(--muted) / 0.3)' }} />
               <Bar dataKey="SR" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]}>
                 <LabelList dataKey="SR" position="top" style={{ fontSize: 11, fill: 'hsl(var(--foreground))' }} />
               </Bar>

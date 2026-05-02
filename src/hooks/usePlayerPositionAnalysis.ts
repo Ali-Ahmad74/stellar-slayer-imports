@@ -7,6 +7,7 @@ export interface PositionStat {
   totalRuns: number;
   winningRuns: number;
   innings: number;
+  winningRunsPct: number;
 }
 
 export interface PhaseStat {
