@@ -49,7 +49,7 @@ export function usePlayerPositionAnalysis(playerId: number | null, selectedSeaso
         const cur = posMap.get(key) || {
           position: pos,
           positionLabel: pos === 'Unknown' ? 'N/A' : `#${pos}`,
-          totalRuns: 0, winningRuns: 0, innings: 0,
+          totalRuns: 0, winningRuns: 0, innings: 0, winningRunsPct: 0,
         };
         cur.totalRuns += r.runs || 0;
         cur.innings += 1;
