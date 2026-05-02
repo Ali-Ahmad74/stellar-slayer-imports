@@ -61,34 +61,19 @@ export function usePushNotifications() {
       const reg = await navigator.serviceWorker.register('/sw.js');
       await navigator.serviceWorker.ready;
 
-      // Get VAPID public key
-      const { data: vapidData } = await supabase
-        .from('vapid_keys')
-        .select('public_key')
-        .single();
+      // Get VAPID public key via edge function (private key is admin-only in DB)
+      const { data: vapidResp, error: vapidErr } = await supabase.functions.invoke(
+        'generate-vapid-keys',
+        { body: {} }
+      );
 
-      if (!vapidData?.public_key) {
-        // Try to generate VAPID keys
-        const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-        await fetch(`https://${projectId}.supabase.co/functions/v1/generate-vapid-keys`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        const { data: retryData } = await supabase
-          .from('vapid_keys')
-          .select('public_key')
-          .single();
-
-        if (!retryData?.public_key) {
-          console.error('VAPID keys not available');
-          return false;
-        }
-
-        return await doSubscribe(reg, retryData.public_key);
+      const publicKey = (vapidResp as any)?.publicKey;
+      if (vapidErr || !publicKey) {
+        console.error('VAPID public key not available', vapidErr);
+        return false;
       }
 
-      return await doSubscribe(reg, vapidData.public_key);
+      return await doSubscribe(reg, publicKey);
     } catch (err) {
       console.error('Push subscription failed:', err);
       return false;
