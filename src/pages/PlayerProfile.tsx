@@ -289,6 +289,7 @@ const PlayerProfile = () => {
                   bowlingRecords={bowlingRecords}
                   playerId={playerId!}
                   playerName={player.name}
+                  selectedSeasonId={selectedSeasonId}
                 />
               )}
             </TabsContent>

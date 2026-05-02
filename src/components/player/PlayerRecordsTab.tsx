@@ -4,6 +4,9 @@ import { PlayerBestPerformances } from '@/components/PlayerBestPerformances';
 import { FormAnalysisChart } from '@/components/FormAnalysisChart';
 import { OpponentBreakdown } from '@/components/OpponentBreakdown';
 import { PlayerPerformanceChart } from '@/components/PlayerPerformanceChart';
+import { PlayerPositionChart } from '@/components/player/PlayerPositionChart';
+import { PlayerPhaseStrikeRate } from '@/components/player/PlayerPhaseStrikeRate';
+import { usePlayerPositionAnalysis } from '@/hooks/usePlayerPositionAnalysis';
 
 interface PlayerRecordsTabProps {
   stats: any;
@@ -14,12 +17,15 @@ interface PlayerRecordsTabProps {
   bowlingRecords: any[];
   playerId: number;
   playerName: string;
+  selectedSeasonId: string;
 }
 
 export const PlayerRecordsTab = ({
   stats, rankHistory, formData, formStats,
-  battingRecords, bowlingRecords, playerId, playerName,
+  battingRecords, bowlingRecords, playerId, playerName, selectedSeasonId,
 }: PlayerRecordsTabProps) => {
+  const { positions, phases } = usePlayerPositionAnalysis(playerId, selectedSeasonId);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Achievements */}
@@ -38,8 +44,18 @@ export const PlayerRecordsTab = ({
         <PlayerBestPerformances battingRecords={battingRecords} bowlingRecords={bowlingRecords} />
       </motion.div>
 
-      {/* Form Analysis */}
+      {/* Batting Position Impact - full width */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="lg:col-span-2">
+        <PlayerPositionChart data={positions} />
+      </motion.div>
+
+      {/* Phase Strike Rate */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+        <PlayerPhaseStrikeRate data={phases} />
+      </motion.div>
+
+      {/* Form Analysis */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
         <FormAnalysisChart data={formData} stats={formStats} type="batting" />
       </motion.div>
 
