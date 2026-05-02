@@ -56,12 +56,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchTeam = async () => {
     setTeamLoading(true);
+    // owner_user_id is admin-only; select safe columns explicitly
     const { data } = await supabase
       .from('teams')
-      .select('*')
+      .select('id, name, description, logo_url, tagline, watermark_enabled, watermark_handle, watermark_position')
       .limit(1)
       .maybeSingle();
-    setTeam(data ?? null);
+    setTeam(data ? { ...data, owner_user_id: null } as Team : null);
     setTeamLoading(false);
   };
 
