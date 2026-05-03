@@ -284,11 +284,11 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
 
     // Insert in parallel (errors throw)
     const inserts: Promise<any>[] = [];
-    if (battingRows.length) inserts.push(supabase.from("batting_inputs").insert(battingRows));
-    if (bowlingRows.length) inserts.push(supabase.from("bowling_inputs").insert(bowlingRows));
-    if (fieldingRows.length) inserts.push(supabase.from("fielding_inputs").insert(fieldingRows));
-    if (partnershipRows.length) inserts.push(supabase.from("match_partnerships").insert(partnershipRows));
-    if (attendanceRows.length) inserts.push(supabase.from("match_attendance").insert(attendanceRows));
+    if (battingRows.length) inserts.push(Promise.resolve(supabase.from("batting_inputs").insert(battingRows)));
+    if (bowlingRows.length) inserts.push(Promise.resolve(supabase.from("bowling_inputs").insert(bowlingRows)));
+    if (fieldingRows.length) inserts.push(Promise.resolve(supabase.from("fielding_inputs").insert(fieldingRows)));
+    if (partnershipRows.length) inserts.push(Promise.resolve(supabase.from("match_partnerships").insert(partnershipRows)));
+    if (attendanceRows.length) inserts.push(Promise.resolve(supabase.from("match_attendance").insert(attendanceRows)));
     const results = await Promise.all(inserts);
     for (const r of results) {
       if (r?.error) throw r.error;
