@@ -605,7 +605,7 @@ const Admin = () => {
 
             <TabsContent value="players">
               <PlayerManagement
-                players={players} isAdmin={isAdmin} loadingData={loadingData} teamId={teamId}
+                players={players} series={series} seasons={seasons} isAdmin={isAdmin} loadingData={loadingData} teamId={teamId}
                 onAddPlayer={() => { setEditingPlayer(undefined); setPlayerDialogOpen(true); }}
                 onEditPlayer={(p) => { setEditingPlayer(p); setPlayerDialogOpen(true); }}
                 onDeletePlayer={(id, name) => handleDeleteClick('player', id, name)}

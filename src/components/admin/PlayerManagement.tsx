@@ -5,12 +5,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { RoleBadge } from '@/components/RoleBadge';
 import { PlayerAvatar } from '@/components/PlayerAvatar';
 import { CSVImportDialog } from '@/components/CSVImportDialog';
+import { PDFImportDialog } from '@/components/PDFImportDialog';
 
 import { PlayerRole } from '@/types/cricket';
-import { AdminPlayer } from './types';
+import { AdminPlayer, AdminSeries, AdminSeason } from './types';
 
 interface Props {
   players: AdminPlayer[];
+  series?: AdminSeries[];
+  seasons?: AdminSeason[];
   isAdmin: boolean;
   loadingData: boolean;
   teamId: string | null;
@@ -20,7 +23,7 @@ interface Props {
   onImportComplete: () => void;
 }
 
-export function PlayerManagement({ players, isAdmin, loadingData, teamId, onAddPlayer, onEditPlayer, onDeletePlayer, onImportComplete }: Props) {
+export function PlayerManagement({ players, series = [], seasons = [], isAdmin, loadingData, teamId, onAddPlayer, onEditPlayer, onDeletePlayer, onImportComplete }: Props) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -29,11 +32,20 @@ export function PlayerManagement({ players, isAdmin, loadingData, teamId, onAddP
           <CardDescription>Add and manage your team's players</CardDescription>
         </div>
         {isAdmin && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button onClick={onAddPlayer}>
               <Plus className="w-4 h-4 mr-2" />Add Player
             </Button>
             {teamId && <CSVImportDialog teamId={teamId} onImportComplete={onImportComplete} />}
+            {teamId && (
+              <PDFImportDialog
+                players={players}
+                series={series}
+                seasons={seasons}
+                teamId={teamId}
+                onImportComplete={onImportComplete}
+              />
+            )}
           </div>
         )}
       </CardHeader>
