@@ -12,7 +12,8 @@ Extract data and return ONLY valid JSON matching the requested schema. Do NOT in
 - result must be one of: "won", "lost", "draw".
 - our_batting = batters in First Innings (our team).
 - our_bowling = bowlers in Second Innings (us bowling at opponent).
-- our_fielding = fielders who took catches/stumpings/runouts in Second Innings (parse from dismissal text like "c Muzammil b Bowler").
+- our_fielding = fielders who took catches/stumpings/runouts in Second Innings.
+  Parse "c Name b Bowler" → catches; "st Name b Bowler" → stumpings; "run out (Name)" or "run out (NameA/NameB)" → runouts (credit each named).
 - fall_of_wickets = First Innings FOW only (our team's wickets falling).
 - partnerships = First Innings partnerships only.
 - If a field is unknown, use sensible defaults (0 for numbers, null for strings, [] for arrays).
@@ -32,7 +33,7 @@ const USER_PROMPT = `Extract match data from this cricket scorecard PDF and retu
   "result": "won|lost|draw",
   "our_batting": [{ "name": "string", "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "out": true, "dismissal_type": "string|null", "batting_position": 1 }],
   "our_bowling": [{ "name": "string", "overs": 0, "runs_conceded": 0, "wickets": 0, "maidens": 0, "wides": 0, "no_balls": 0 }],
-  "our_fielding": [{ "name": "string", "catches": 0 }],
+  "our_fielding": [{ "name": "string", "catches": 0, "stumpings": 0, "runouts": 0 }],
   "fall_of_wickets": [{ "wicket_number": 1, "runs_at_fall": 0, "over": "0.0", "batsman_out": "string" }],
   "partnerships": [{ "wicket_number": 1, "player1_name": "string", "player2_name": "string", "runs": 0 }]
 }`;

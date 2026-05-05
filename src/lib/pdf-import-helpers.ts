@@ -21,7 +21,12 @@ export type ParsedBowling = {
   no_balls: number;
 };
 
-export type ParsedFielding = { name: string; catches: number };
+export type ParsedFielding = {
+  name: string;
+  catches: number;
+  stumpings?: number;
+  runouts?: number;
+};
 
 export type ParsedFOW = {
   wicket_number: number;
@@ -35,6 +40,7 @@ export type ParsedPartnership = {
   player1_name: string;
   player2_name: string;
   runs: number;
+  balls: number;
 };
 
 export type ParsedMatch = {
@@ -106,6 +112,48 @@ export function extractCatchesFromDismissals(
   return out;
 }
 
+export function extractStumpingsFromDismissals(
+  dismissals: Array<string | null | undefined>
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const re = /^\s*st\s+([A-Za-z][A-Za-z .'-]*?)\s+b\s+/i;
+  for (const raw of dismissals) {
+    if (!raw) continue;
+    const m = raw.match(re);
+    if (!m) continue;
+    const k = normalizeName(m[1]);
+    if (!k) continue;
+    out.set(k, (out.get(k) || 0) + 1);
+  }
+  return out;
+}
+
+export function extractRunoutsFromDismissals(
+  dismissals: Array<string | null | undefined>
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const re = /run\s*out\s*\(([^)]+)\)/i;
+  for (const raw of dismissals) {
+    if (!raw) continue;
+    const m = raw.match(re);
+    if (!m) continue;
+    const inside = m[1];
+    const names = inside.split(/[\/,]/).map((s) => normalizeName(s)).filter(Boolean);
+    for (const n of names) {
+      out.set(n, (out.get(n) || 0) + 1);
+    }
+  }
+  return out;
+}
+
+export function oversStringToBalls(over: string | null | undefined): number {
+  if (!over) return 0;
+  const parts = String(over).trim().split(".");
+  const whole = parseInt(parts[0] || "0", 10) || 0;
+  const frac = parts.length > 1 ? Math.min(parseInt(parts[1] || "0", 10) || 0, 5) : 0;
+  return whole * 6 + frac;
+}
+
 /**
  * Compute partnerships from FOW + batting order.
  * Partnership N runs = FOW[N].runs - FOW[N-1].runs.
@@ -113,26 +161,32 @@ export function extractCatchesFromDismissals(
  */
 export function computePartnerships(
   fow: ParsedFOW[],
-  batting: ParsedBatting[]
-): Array<{ wicket_number: number; player1_name: string; player2_name: string; runs: number }> {
+  batting: ParsedBatting[],
+  opts?: { teamScore?: number; teamBalls?: number }
+): Array<{ wicket_number: number; player1_name: string; player2_name: string; runs: number; balls: number }> {
   const sortedFow = [...fow].sort((a, b) => a.wicket_number - b.wicket_number);
   const sortedBat = [...batting].sort((a, b) => (a.batting_position || 99) - (b.batting_position || 99));
-  if (sortedBat.length < 2 || sortedFow.length === 0) return [];
+  if (sortedBat.length < 2) return [];
 
-  const result: Array<{ wicket_number: number; player1_name: string; player2_name: string; runs: number }> = [];
+  const result: Array<{ wicket_number: number; player1_name: string; player2_name: string; runs: number; balls: number }> = [];
   let atCrease: [string, string] = [sortedBat[0].name, sortedBat[1].name];
   let nextInIdx = 2;
   let prevRuns = 0;
+  let prevBalls = 0;
 
   for (const f of sortedFow) {
     const runs = Math.max(0, f.runs_at_fall - prevRuns);
+    const ballsAtFall = oversStringToBalls(f.over);
+    const balls = Math.max(0, ballsAtFall - prevBalls);
     result.push({
       wicket_number: f.wicket_number,
       player1_name: atCrease[0],
       player2_name: atCrease[1],
       runs,
+      balls,
     });
     prevRuns = f.runs_at_fall;
+    prevBalls = ballsAtFall;
 
     // Determine who got out and replace with next in order
     const outNorm = normalizeName(f.batsman_out);
@@ -148,6 +202,23 @@ export function computePartnerships(
     }
     nextInIdx += 1;
   }
+
+  // Last unfinished partnership: if team total > last FOW runs, the remaining
+  // not-out pair scored the difference together.
+  const teamScore = opts?.teamScore;
+  const teamBalls = opts?.teamBalls;
+  if (typeof teamScore === "number" && teamScore > prevRuns) {
+    const extraRuns = teamScore - prevRuns;
+    const extraBalls = typeof teamBalls === "number" && teamBalls > prevBalls ? teamBalls - prevBalls : 0;
+    result.push({
+      wicket_number: (sortedFow[sortedFow.length - 1]?.wicket_number ?? 0) + 1,
+      player1_name: atCrease[0],
+      player2_name: atCrease[1],
+      runs: extraRuns,
+      balls: extraBalls,
+    });
+  }
+
   return result;
 }
 

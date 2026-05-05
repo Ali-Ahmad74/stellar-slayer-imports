@@ -29,6 +29,8 @@ import {
   buildPlayerMap,
   computePartnerships,
   extractCatchesFromDismissals,
+  extractStumpingsFromDismissals,
+  extractRunoutsFromDismissals,
   fileToBase64,
   findPlayer,
   normalizeResult,
@@ -155,13 +157,42 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
     const parsed = entry.parsed;
     const playerMap = buildPlayerMap(players);
 
-    // Determine season
+    // Determine season — prefer match-year season, auto-create if missing.
     let resolvedSeasonId: number | null = null;
     if (seasonId !== "auto") {
       resolvedSeasonId = parseInt(seasonId, 10);
     } else {
-      const active = seasons.find((s) => s.is_active);
-      resolvedSeasonId = active?.id ?? null;
+      const matchYear = parsed.match_date ? new Date(parsed.match_date).getUTCFullYear() : NaN;
+      if (Number.isFinite(matchYear)) {
+        let yearSeason = seasons.find((s) => s.year === matchYear);
+        if (!yearSeason) {
+          const created = await insertWithSafeNumericId("seasons", {
+            team_id: teamId,
+            name: `Season ${matchYear}`,
+            year: matchYear,
+            is_active: false,
+          });
+          if (!created.error) {
+            const { data: refetch } = await supabase
+              .from("seasons")
+              .select("*")
+              .eq("team_id", teamId)
+              .eq("year", matchYear)
+              .order("id", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (refetch) {
+              yearSeason = refetch as any;
+              seasons.push(refetch as any);
+            }
+          }
+        }
+        resolvedSeasonId = yearSeason?.id ?? null;
+      }
+      if (!resolvedSeasonId) {
+        const active = seasons.find((s) => s.is_active);
+        resolvedSeasonId = active?.id ?? null;
+      }
     }
     const resolvedSeriesId = seriesId !== "none" ? parseInt(seriesId, 10) : null;
 
@@ -200,66 +231,92 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
       const p = findPlayer(b.name, playerMap);
       if (!p) continue;
       attendanceIds.add(p.id);
+      const runs = b.runs ?? 0;
+      const balls = b.balls ?? 0;
+      // milestone balls: data is per-innings runs/balls; if reached, attribute the innings ball-count
+      const balls_to_fifty = runs >= 50 && balls > 0 ? balls : null;
+      const balls_to_hundred = runs >= 100 && balls > 0 ? balls : null;
       battingRows.push({
         match_id: matchId,
         player_id: p.id,
         season_id: resolvedSeasonId,
-        runs: b.runs ?? 0,
-        balls: b.balls ?? 0,
+        runs,
+        balls,
         fours: b.fours ?? 0,
         sixes: b.sixes ?? 0,
         out: !!b.out,
         dismissal_type: b.dismissal_type ?? null,
         batting_position: b.batting_position ?? null,
+        balls_to_fifty,
+        balls_to_hundred,
       });
     }
 
-    // 3. Bowling
+    // 3. Bowling — also derive estimated dot balls (legal balls minus runs conceded)
     const bowlingRows: any[] = [];
     for (const bw of parsed.our_bowling || []) {
       const p = findPlayer(bw.name, playerMap);
       if (!p) continue;
       attendanceIds.add(p.id);
+      const balls = oversToBalls(bw.overs);
+      const runsConceded = bw.runs_conceded ?? 0;
+      const dotBalls = Math.max(0, Math.min(balls, balls - runsConceded));
       bowlingRows.push({
         match_id: matchId,
         player_id: p.id,
         season_id: resolvedSeasonId,
-        balls: oversToBalls(bw.overs),
-        runs_conceded: bw.runs_conceded ?? 0,
+        balls,
+        runs_conceded: runsConceded,
         wickets: bw.wickets ?? 0,
         maidens: bw.maidens ?? 0,
         wides: bw.wides ?? 0,
         no_balls: bw.no_balls ?? 0,
+        dot_balls: dotBalls,
       });
     }
 
-    // 4. Fielding (model + dismissal-derived merged)
-    const fielderCounts = new Map<string, number>();
+    // 4. Fielding — merge model output with dismissal-text parsing for catches/stumpings/runouts
+    type FieldAgg = { catches: number; stumpings: number; runouts: number };
+    const fieldAgg = new Map<number, FieldAgg>();
+    const ensure = (id: number): FieldAgg => {
+      let cur = fieldAgg.get(id);
+      if (!cur) { cur = { catches: 0, stumpings: 0, runouts: 0 }; fieldAgg.set(id, cur); }
+      return cur;
+    };
     for (const f of parsed.our_fielding || []) {
       const p = findPlayer(f.name, playerMap);
       if (!p) continue;
-      fielderCounts.set(String(p.id), Math.max(fielderCounts.get(String(p.id)) || 0, f.catches || 0));
+      const a = ensure(p.id);
+      a.catches = Math.max(a.catches, f.catches || 0);
+      a.stumpings = Math.max(a.stumpings, f.stumpings || 0);
+      a.runouts = Math.max(a.runouts, f.runouts || 0);
     }
-    // NOTE: opponent dismissals not in payload (we excluded them); rely on model output for catches.
-    // But we can also extract from our_batting dismissal text (catches WE dropped against, not relevant here).
+    // Also parse from our_batting dismissal text (opponent fielders not in roster will not match — fine)
+    const ourBattingDismissals = (parsed.our_batting || []).map((b) => b.dismissal_type);
+    // Note: this would credit opponent fielders, so skip. Instead, rely solely on model `our_fielding` for fielding credits.
+    void ourBattingDismissals;
     const fieldingRows: any[] = [];
-    for (const [pid, catches] of fielderCounts) {
-      if (catches <= 0) continue;
-      const playerId = parseInt(pid, 10);
+    for (const [playerId, agg] of fieldAgg) {
+      if (agg.catches <= 0 && agg.stumpings <= 0 && agg.runouts <= 0) continue;
       attendanceIds.add(playerId);
       fieldingRows.push({
         match_id: matchId,
         player_id: playerId,
         season_id: resolvedSeasonId,
-        catches,
-        runouts: 0,
-        stumpings: 0,
+        catches: agg.catches,
+        runouts: agg.runouts,
+        stumpings: agg.stumpings,
         dropped_catches: 0,
       });
     }
 
-    // 5. Partnerships from FOW
-    const computed = computePartnerships(parsed.fall_of_wickets || [], parsed.our_batting || []);
+    // 5. Partnerships from FOW + last-unfinished
+    const teamBalls = (parsed.our_batting || []).reduce((acc, b) => acc + (b.balls || 0), 0);
+    const computed = computePartnerships(
+      parsed.fall_of_wickets || [],
+      parsed.our_batting || [],
+      { teamScore: parsed.our_score ?? undefined, teamBalls: teamBalls > 0 ? teamBalls : undefined }
+    );
     const partnershipRows: any[] = [];
     for (const pr of computed) {
       const p1 = findPlayer(pr.player1_name, playerMap);
@@ -271,7 +328,7 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
         player1_id: p1.id,
         player2_id: p2.id,
         runs: pr.runs,
-        balls: 0,
+        balls: pr.balls ?? 0,
       });
     }
 

@@ -34,6 +34,7 @@ export interface BowlingScorecardRow {
   maidens: number;
   wides: number;
   no_balls: number;
+  dot_balls: number;
 }
 
 export interface FieldingScorecardRow {
@@ -92,7 +93,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             .order("runs", { ascending: false }),
           supabase
             .from("bowling_inputs")
-            .select("player_id, balls, runs_conceded, wickets, maidens, wides, no_balls, players(name, photo_url)")
+            .select("player_id, balls, runs_conceded, wickets, maidens, wides, no_balls, dot_balls, players(name, photo_url)")
             .eq("match_id", matchId)
             .order("wickets", { ascending: false }),
           supabase
@@ -129,6 +130,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
           maidens: Number(b.maidens ?? 0),
           wides: Number(b.wides ?? 0),
           no_balls: Number(b.no_balls ?? 0),
+          dot_balls: Number(b.dot_balls ?? 0),
         }));
 
         const fieldingRows: FieldingScorecardRow[] = (fieldRes.data ?? [])
@@ -287,6 +289,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                   <TableHead className="text-center">B</TableHead>
                   <TableHead className="text-center">4s</TableHead>
                   <TableHead className="text-center">6s</TableHead>
+                  <TableHead className="text-center">Dots</TableHead>
                   <TableHead className="text-center">SR</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                 </TableRow>
@@ -306,6 +309,9 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                     <TableCell className="text-center">{b.balls}</TableCell>
                     <TableCell className="text-center">{b.fours}</TableCell>
                     <TableCell className="text-center">{b.sixes}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">
+                      {Math.max(0, Math.min(b.balls, b.balls - b.runs))}
+                    </TableCell>
                     <TableCell className="text-center">{b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(1) : "0.0"}</TableCell>
                     <TableCell className="text-center">
                       {b.out ? (
@@ -366,6 +372,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                   <TableHead className="text-center">R</TableHead>
                   <TableHead className="text-center">W</TableHead>
                   <TableHead className="text-center">Econ</TableHead>
+                  <TableHead className="text-center">Dots</TableHead>
                   <TableHead className="text-center">Extras</TableHead>
                 </TableRow>
               </TableHeader>
@@ -383,6 +390,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                     <TableCell className="text-center">{b.runs_conceded}</TableCell>
                     <TableCell className="text-center font-bold">{b.wickets}</TableCell>
                     <TableCell className="text-center">{b.balls > 0 ? (b.runs_conceded / (b.balls / 6)).toFixed(2) : "0.00"}</TableCell>
+                    <TableCell className="text-center text-muted-foreground">{b.dot_balls}</TableCell>
                     <TableCell className="text-center text-muted-foreground">
                       {b.wides + b.no_balls > 0 ? `${b.wides}wd, ${b.no_balls}nb` : "-"}
                     </TableCell>

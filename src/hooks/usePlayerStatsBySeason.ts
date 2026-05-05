@@ -79,6 +79,9 @@ export function usePlayerStatsBySeason(
       let fifties = 0;
       let hundreds = 0;
       let ducks = 0;
+      let battingDotBalls = 0;
+      let bestFiftyBalls: number | null = null;
+      let bestHundredBalls: number | null = null;
 
       for (const input of battingData || []) {
         totalRuns += input.runs || 0;
@@ -90,9 +93,16 @@ export function usePlayerStatsBySeason(
         if (input.out && (input.runs || 0) === 0) ducks += 1;
         
         const runs = input.runs || 0;
+        const balls = input.balls || 0;
+        // Estimated dot balls per innings: balls - runs (capped to balls)
+        battingDotBalls += Math.max(0, Math.min(balls, balls - runs));
         if (runs >= 100) hundreds += 1;
         else if (runs >= 50) fifties += 1;
         else if (runs >= 30) thirties += 1;
+        const btf = (input as any).balls_to_fifty as number | null;
+        const bth = (input as any).balls_to_hundred as number | null;
+        if (runs >= 100 && bth && (bestHundredBalls === null || bth < bestHundredBalls)) bestHundredBalls = bth;
+        if (runs >= 50 && btf && (bestFiftyBalls === null || btf < bestFiftyBalls)) bestFiftyBalls = btf;
       }
 
       // Aggregate bowling stats
@@ -170,7 +180,10 @@ export function usePlayerStatsBySeason(
         dropped_catches: droppedCatches,
         run_outs_as_batter: runOutsAsBatter,
         ducks,
-      };
+      } as any;
+      (aggregatedStats as any).batting_dot_balls = battingDotBalls;
+      (aggregatedStats as any).fastest_fifty_balls = bestFiftyBalls;
+      (aggregatedStats as any).fastest_hundred_balls = bestHundredBalls;
 
       setStats(aggregatedStats);
 
