@@ -29,6 +29,8 @@ import {
   buildPlayerMap,
   computePartnerships,
   extractCatchesFromDismissals,
+  extractStumpingsFromDismissals,
+  extractRunoutsFromDismissals,
   fileToBase64,
   findPlayer,
   normalizeResult,
