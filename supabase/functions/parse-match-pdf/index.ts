@@ -33,7 +33,7 @@ const USER_PROMPT = `Extract match data from this cricket scorecard PDF and retu
   "result": "won|lost|draw",
   "our_batting": [{ "name": "string", "runs": 0, "balls": 0, "fours": 0, "sixes": 0, "out": true, "dismissal_type": "string|null", "batting_position": 1 }],
   "our_bowling": [{ "name": "string", "overs": 0, "runs_conceded": 0, "wickets": 0, "maidens": 0, "wides": 0, "no_balls": 0 }],
-  "our_fielding": [{ "name": "string", "catches": 0 }],
+  "our_fielding": [{ "name": "string", "catches": 0, "stumpings": 0, "runouts": 0 }],
   "fall_of_wickets": [{ "wicket_number": 1, "runs_at_fall": 0, "over": "0.0", "batsman_out": "string" }],
   "partnerships": [{ "wicket_number": 1, "player1_name": "string", "player2_name": "string", "runs": 0 }]
 }`;
