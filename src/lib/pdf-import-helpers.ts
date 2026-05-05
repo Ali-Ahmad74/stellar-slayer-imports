@@ -112,6 +112,48 @@ export function extractCatchesFromDismissals(
   return out;
 }
 
+export function extractStumpingsFromDismissals(
+  dismissals: Array<string | null | undefined>
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const re = /^\s*st\s+([A-Za-z][A-Za-z .'-]*?)\s+b\s+/i;
+  for (const raw of dismissals) {
+    if (!raw) continue;
+    const m = raw.match(re);
+    if (!m) continue;
+    const k = normalizeName(m[1]);
+    if (!k) continue;
+    out.set(k, (out.get(k) || 0) + 1);
+  }
+  return out;
+}
+
+export function extractRunoutsFromDismissals(
+  dismissals: Array<string | null | undefined>
+): Map<string, number> {
+  const out = new Map<string, number>();
+  const re = /run\s*out\s*\(([^)]+)\)/i;
+  for (const raw of dismissals) {
+    if (!raw) continue;
+    const m = raw.match(re);
+    if (!m) continue;
+    const inside = m[1];
+    const names = inside.split(/[\/,]/).map((s) => normalizeName(s)).filter(Boolean);
+    for (const n of names) {
+      out.set(n, (out.get(n) || 0) + 1);
+    }
+  }
+  return out;
+}
+
+export function oversStringToBalls(over: string | null | undefined): number {
+  if (!over) return 0;
+  const parts = String(over).trim().split(".");
+  const whole = parseInt(parts[0] || "0", 10) || 0;
+  const frac = parts.length > 1 ? Math.min(parseInt(parts[1] || "0", 10) || 0, 5) : 0;
+  return whole * 6 + frac;
+}
+
 /**
  * Compute partnerships from FOW + batting order.
  * Partnership N runs = FOW[N].runs - FOW[N-1].runs.
