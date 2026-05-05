@@ -157,13 +157,42 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
     const parsed = entry.parsed;
     const playerMap = buildPlayerMap(players);
 
-    // Determine season
+    // Determine season — prefer match-year season, auto-create if missing.
     let resolvedSeasonId: number | null = null;
     if (seasonId !== "auto") {
       resolvedSeasonId = parseInt(seasonId, 10);
     } else {
-      const active = seasons.find((s) => s.is_active);
-      resolvedSeasonId = active?.id ?? null;
+      const matchYear = parsed.match_date ? new Date(parsed.match_date).getUTCFullYear() : NaN;
+      if (Number.isFinite(matchYear)) {
+        let yearSeason = seasons.find((s) => s.year === matchYear);
+        if (!yearSeason) {
+          const created = await insertWithSafeNumericId("seasons", {
+            team_id: teamId,
+            name: `Season ${matchYear}`,
+            year: matchYear,
+            is_active: false,
+          });
+          if (!created.error) {
+            const { data: refetch } = await supabase
+              .from("seasons")
+              .select("*")
+              .eq("team_id", teamId)
+              .eq("year", matchYear)
+              .order("id", { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (refetch) {
+              yearSeason = refetch as any;
+              seasons.push(refetch as any);
+            }
+          }
+        }
+        resolvedSeasonId = yearSeason?.id ?? null;
+      }
+      if (!resolvedSeasonId) {
+        const active = seasons.find((s) => s.is_active);
+        resolvedSeasonId = active?.id ?? null;
+      }
     }
     const resolvedSeriesId = seriesId !== "none" ? parseInt(seriesId, 10) : null;
 
