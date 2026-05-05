@@ -21,7 +21,12 @@ export type ParsedBowling = {
   no_balls: number;
 };
 
-export type ParsedFielding = { name: string; catches: number };
+export type ParsedFielding = {
+  name: string;
+  catches: number;
+  stumpings?: number;
+  runouts?: number;
+};
 
 export type ParsedFOW = {
   wicket_number: number;
@@ -35,6 +40,7 @@ export type ParsedPartnership = {
   player1_name: string;
   player2_name: string;
   runs: number;
+  balls: number;
 };
 
 export type ParsedMatch = {
