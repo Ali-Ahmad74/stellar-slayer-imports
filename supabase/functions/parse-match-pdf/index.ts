@@ -12,7 +12,8 @@ Extract data and return ONLY valid JSON matching the requested schema. Do NOT in
 - result must be one of: "won", "lost", "draw".
 - our_batting = batters in First Innings (our team).
 - our_bowling = bowlers in Second Innings (us bowling at opponent).
-- our_fielding = fielders who took catches/stumpings/runouts in Second Innings (parse from dismissal text like "c Muzammil b Bowler").
+- our_fielding = fielders who took catches/stumpings/runouts in Second Innings.
+  Parse "c Name b Bowler" → catches; "st Name b Bowler" → stumpings; "run out (Name)" or "run out (NameA/NameB)" → runouts (credit each named).
 - fall_of_wickets = First Innings FOW only (our team's wickets falling).
 - partnerships = First Innings partnerships only.
 - If a field is unknown, use sensible defaults (0 for numbers, null for strings, [] for arrays).
