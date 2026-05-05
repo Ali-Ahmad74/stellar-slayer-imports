@@ -144,9 +144,42 @@ const Admin = () => {
   };
 
   // ── Match CRUD
+  // Resolve the season for a given match date — auto-create "Season YYYY" if none exists.
+  const resolveSeasonIdForDate = async (matchDate: string): Promise<number | null> => {
+    if (!teamId || !matchDate) return null;
+    const year = new Date(matchDate).getUTCFullYear();
+    if (!Number.isFinite(year)) return null;
+    const existing = seasons.find((s) => s.year === year);
+    if (existing) return existing.id;
+    const created = await insertWithSafeNumericId('seasons', {
+      team_id: teamId,
+      name: `Season ${year}`,
+      year,
+      is_active: false,
+    });
+    if (created.error) {
+      console.error('Failed to auto-create season', created.error);
+      return null;
+    }
+    const { data } = await supabase
+      .from('seasons')
+      .select('*')
+      .eq('team_id', teamId)
+      .eq('year', year)
+      .order('id', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      setSeasons((prev) => [data as AdminSeason, ...prev]);
+      return (data as any).id;
+    }
+    return null;
+  };
+
   const handleSaveMatch = async (data: MatchFormData) => {
     if (!teamId) return;
     setSaving(true);
+    const seasonId = await resolveSeasonIdForDate(data.match_date);
     if (data.id) {
       const { error } = await supabase.from('matches').update({
         match_date: data.match_date, overs: data.overs, venue: data.venue,
@@ -154,6 +187,7 @@ const Admin = () => {
         opponent_name: data.opponent_name, our_score: data.our_score,
         opponent_score: data.opponent_score, result: data.result,
         player_of_the_match_id: data.player_of_the_match_id,
+        season_id: seasonId,
       }).eq('id', data.id);
       if (error) toast.error('Failed to update match: ' + error.message);
       else {
@@ -170,6 +204,7 @@ const Admin = () => {
         opponent_score: data.opponent_score, result: data.result,
         player_of_the_match_id: data.player_of_the_match_id,
         team_id: teamId,
+        season_id: seasonId,
       });
       if (error) {
         toast.error('Failed to add match: ' + error.message);
