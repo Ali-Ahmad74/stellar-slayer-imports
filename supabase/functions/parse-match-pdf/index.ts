@@ -16,12 +16,6 @@ Extract data and return ONLY valid JSON matching the requested schema. Do NOT in
   Parse "c Name b Bowler" → catches; "st Name b Bowler" → stumpings; "run out (Name)" or "run out (NameA/NameB)" → runouts (credit each named).
 - fall_of_wickets = First Innings FOW only (our team's wickets falling).
 - partnerships = First Innings partnerships only.
-- our_ball_by_ball = ball-by-ball commentary for the FIRST innings (our team batting). Read every delivery
-  printed in the over-by-over / commentary section. For each delivery include: over (e.g. "12.3"),
-  batter (striker name as printed), bowler, runs (batter runs only, exclude extras), is_wicket (true if
-  a wicket fell on this ball), is_legal (false for wide/no-ball, true otherwise), extras_type
-  ("wide"|"no_ball"|"bye"|"leg_bye"|null), extras_runs (number, default 0). If commentary is missing
-  return [].
 - If a field is unknown, use sensible defaults (0 for numbers, null for strings, [] for arrays).
 - Player names: keep exactly as printed, trim whitespace.
 Return ONLY the JSON object — no explanation.`;
@@ -41,8 +35,7 @@ const USER_PROMPT = `Extract match data from this cricket scorecard PDF and retu
   "our_bowling": [{ "name": "string", "overs": 0, "runs_conceded": 0, "wickets": 0, "maidens": 0, "wides": 0, "no_balls": 0 }],
   "our_fielding": [{ "name": "string", "catches": 0, "stumpings": 0, "runouts": 0 }],
   "fall_of_wickets": [{ "wicket_number": 1, "runs_at_fall": 0, "over": "0.0", "batsman_out": "string" }],
-  "partnerships": [{ "wicket_number": 1, "player1_name": "string", "player2_name": "string", "runs": 0 }],
-  "our_ball_by_ball": [{ "over": "0.1", "batter": "string", "bowler": "string", "runs": 0, "is_wicket": false, "is_legal": true, "extras_type": null, "extras_runs": 0 }]
+  "partnerships": [{ "wicket_number": 1, "player1_name": "string", "player2_name": "string", "runs": 0 }]
 }`;
 
 function stripJsonFences(s: string): string {

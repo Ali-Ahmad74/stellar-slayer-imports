@@ -136,8 +136,8 @@ export function TeamRecords({ players }: TeamRecordsProps) {
       }
     }
 
-    // Highest strike rate (min 5 balls)
-    const eligibleSR = battingData.filter((r: any) => r.balls >= 5);
+    // Highest strike rate (min 20 balls)
+    const eligibleSR = battingData.filter((r: any) => r.balls >= 20);
     if (eligibleSR.length > 0) {
       const bestSR = eligibleSR.reduce((best: any, r: any) => {
         const sr = (r.runs / r.balls) * 100;
@@ -146,7 +146,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
       });
       const p = playerMap.get(bestSR.player_id);
       if (p) battingRecords.push({
-        label: "Highest Strike Rate (min 5 balls)",
+        label: "Highest Strike Rate (min 20 balls)",
         player: p,
         value: `${((bestSR.runs / bestSR.balls) * 100).toFixed(1)}`,
         detail: `${bestSR.runs} off ${bestSR.balls} balls`,

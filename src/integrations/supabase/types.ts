@@ -427,7 +427,6 @@ export type Database = {
       }
       matches: {
         Row: {
-          ball_by_ball: Json | null
           created_at: string
           id: number
           match_date: string
@@ -445,7 +444,6 @@ export type Database = {
           venue: string | null
         }
         Insert: {
-          ball_by_ball?: Json | null
           created_at?: string
           id?: number
           match_date: string
@@ -463,7 +461,6 @@ export type Database = {
           venue?: string | null
         }
         Update: {
-          ball_by_ball?: Json | null
           created_at?: string
           id?: number
           match_date?: string
