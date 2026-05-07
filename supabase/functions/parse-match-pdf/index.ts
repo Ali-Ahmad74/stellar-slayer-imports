@@ -86,43 +86,36 @@ Deno.serve(async (req) => {
       throw new Error("pdf_base64 is required");
     }
 
-    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
+    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
+    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
 
-    // Strip data URL prefix if present — Anthropic expects raw base64
     const rawBase64 = pdf_base64.startsWith("data:")
       ? pdf_base64.replace(/^data:application\/pdf;base64,/, "")
       : pdf_base64;
 
-    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 16000,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "document",
-                source: {
-                  type: "base64",
-                  media_type: "application/pdf",
-                  data: rawBase64,
-                },
-              },
-              { type: "text", text: USER_PROMPT },
-            ],
+    const aiResp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { inline_data: { mime_type: "application/pdf", data: rawBase64 } },
+                { text: USER_PROMPT },
+              ],
+            },
+          ],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0,
           },
-        ],
-      }),
-    });
+        }),
+      }
+    );
 
     if (aiResp.status === 429) {
       return new Response(
@@ -132,12 +125,13 @@ Deno.serve(async (req) => {
     }
     if (!aiResp.ok) {
       const txt = await aiResp.text();
-      console.error("Anthropic API error:", aiResp.status, txt);
-      throw new Error(`Anthropic API error ${aiResp.status}: ${txt.slice(0, 200)}`);
+      console.error("Gemini API error:", aiResp.status, txt);
+      throw new Error(`Gemini API error ${aiResp.status}: ${txt.slice(0, 200)}`);
     }
 
     const aiJson = await aiResp.json();
-    const content: string = aiJson?.content?.[0]?.text ?? "";
+    const content: string =
+      aiJson?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text ?? "").join("") ?? "";
     if (!content) throw new Error("AI returned empty response");
 
     let parsed: unknown;
