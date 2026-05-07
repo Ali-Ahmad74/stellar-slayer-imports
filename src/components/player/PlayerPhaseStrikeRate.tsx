@@ -35,13 +35,6 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
     winningRuns: d.winningRuns,
     winningInnings: d.winningInnings,
     winPct: Number(d.winningRunsPct.toFixed(1)),
-    wonSR: Number((d.wonSR ?? 0).toFixed(1)),
-    wonRuns: d.wonRuns ?? 0,
-    wonBalls: d.wonBalls ?? 0,
-    lostSR: Number((d.lostSR ?? 0).toFixed(1)),
-    lostRuns: d.lostRuns ?? 0,
-    lostBalls: d.lostBalls ?? 0,
-    isBbB: !!d.isBallByBall,
   }));
 
   const PhaseTooltip = ({ active, payload }: any) => {
@@ -53,8 +46,7 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
         <p className="text-muted-foreground">Innings: <span className="text-foreground font-medium">{d.innings}</span> ({d.winningInnings} won)</p>
         <p className="text-muted-foreground">Runs / Balls: <span className="text-foreground font-medium">{d.runs} / {d.balls}</span></p>
         <p className="text-muted-foreground">Strike rate: <span className="text-primary font-medium">{d.SR}</span></p>
-        <p className="text-muted-foreground">In wins: <span className="text-success font-medium">{d.wonRuns} / {d.wonBalls}</span> · SR <span className="text-success font-medium">{d.wonSR}</span></p>
-        <p className="text-muted-foreground">In losses: <span className="text-destructive font-medium">{d.lostRuns} / {d.lostBalls}</span> · SR <span className="text-destructive font-medium">{d.lostSR}</span></p>
+        <p className="text-muted-foreground">Winning-cause runs: <span className="text-accent font-medium">{d.winningRuns}</span> ({d.winPct}%)</p>
       </div>
     );
   };
@@ -94,9 +86,7 @@ export function PlayerPhaseStrikeRate({ data }: Props) {
         </div>
 
         <p className="text-[10px] text-muted-foreground text-center italic">
-          {chartData.some(d => d.isBbB)
-            ? 'Computed from ball-by-ball data · split by win/loss in tooltip'
-            : 'Computed from innings totals (older matches without ball-by-ball)'}
+          Based on innings duration buckets · ball-by-ball data not tracked
         </p>
       </CardContent>
     </Card>

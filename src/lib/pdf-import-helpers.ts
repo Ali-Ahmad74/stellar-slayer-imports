@@ -43,17 +43,6 @@ export type ParsedPartnership = {
   balls: number;
 };
 
-export type ParsedBall = {
-  over: string;
-  batter: string;
-  bowler: string;
-  runs: number;
-  is_wicket: boolean;
-  is_legal: boolean;
-  extras_type: string | null;
-  extras_runs: number;
-};
-
 export type ParsedMatch = {
   match_date: string;
   venue: string | null;
@@ -69,7 +58,6 @@ export type ParsedMatch = {
   our_fielding: ParsedFielding[];
   fall_of_wickets: ParsedFOW[];
   partnerships: ParsedPartnership[];
-  our_ball_by_ball?: ParsedBall[];
 };
 
 export function normalizeName(s: string): string {
@@ -261,73 +249,4 @@ export function normalizeResult(r: string | null | undefined): string {
   if (v.startsWith("lost") || v === "loss" || v === "lose") return "lost";
   if (v.startsWith("draw") || v === "tie" || v === "tied" || v === "no result") return "draw";
   return v || "draw";
-}
-
-/**
- * Per-batter stats derived from ball-by-ball: legal balls faced, balls-to-50, balls-to-100.
- * Key = normalized batter name.
- */
-export function deriveBatterBallStats(bbb: ParsedBall[] | undefined | null): Map<string, {
-  balls: number;
-  runs: number;
-  ballsToFifty: number | null;
-  ballsToHundred: number | null;
-}> {
-  const out = new Map<string, { balls: number; runs: number; ballsToFifty: number | null; ballsToHundred: number | null }>();
-  if (!Array.isArray(bbb)) return out;
-  for (const ball of bbb) {
-    if (!ball || !ball.batter) continue;
-    const key = normalizeName(ball.batter);
-    if (!key) continue;
-    let cur = out.get(key);
-    if (!cur) { cur = { balls: 0, runs: 0, ballsToFifty: null, ballsToHundred: null }; out.set(key, cur); }
-    if (ball.is_legal !== false) cur.balls += 1;
-    cur.runs += Number(ball.runs) || 0;
-    if (cur.ballsToFifty === null && cur.runs >= 50) cur.ballsToFifty = cur.balls;
-    if (cur.ballsToHundred === null && cur.runs >= 100) cur.ballsToHundred = cur.balls;
-  }
-  return out;
-}
-
-/**
- * Per-bowler stats from ball-by-ball: legal balls bowled, dot balls (legal balls with 0 runs and 0 extras).
- */
-export function deriveBowlerBallStats(bbb: ParsedBall[] | undefined | null): Map<string, {
-  legalBalls: number;
-  dotBalls: number;
-}> {
-  const out = new Map<string, { legalBalls: number; dotBalls: number }>();
-  if (!Array.isArray(bbb)) return out;
-  for (const ball of bbb) {
-    if (!ball || !ball.bowler) continue;
-    const key = normalizeName(ball.bowler);
-    if (!key) continue;
-    let cur = out.get(key);
-    if (!cur) { cur = { legalBalls: 0, dotBalls: 0 }; out.set(key, cur); }
-    if (ball.is_legal !== false) {
-      cur.legalBalls += 1;
-      const runs = Number(ball.runs) || 0;
-      const ext = Number(ball.extras_runs) || 0;
-      if (runs === 0 && ext === 0 && !ball.is_wicket) cur.dotBalls += 1;
-      // Wickets with 0 runs still count as a dot for the bowler
-      if (runs === 0 && ext === 0 && ball.is_wicket) cur.dotBalls += 1;
-    }
-  }
-  return out;
-}
-
-/** Per-batter list of (cumulativeBallNumber, runsOnBall) for phase analysis. */
-export function batterDeliveries(bbb: ParsedBall[] | undefined | null): Map<string, Array<{ ballIdx: number; runs: number }>> {
-  const out = new Map<string, Array<{ ballIdx: number; runs: number }>>();
-  if (!Array.isArray(bbb)) return out;
-  for (const ball of bbb) {
-    if (!ball || !ball.batter) continue;
-    if (ball.is_legal === false) continue;
-    const key = normalizeName(ball.batter);
-    if (!key) continue;
-    let arr = out.get(key);
-    if (!arr) { arr = []; out.set(key, arr); }
-    arr.push({ ballIdx: arr.length + 1, runs: Number(ball.runs) || 0 });
-  }
-  return out;
 }

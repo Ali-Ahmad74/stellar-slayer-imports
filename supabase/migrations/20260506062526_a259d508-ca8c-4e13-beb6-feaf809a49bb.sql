@@ -1,1 +1,0 @@
-ALTER TABLE public.matches ADD COLUMN IF NOT EXISTS ball_by_ball jsonb;
