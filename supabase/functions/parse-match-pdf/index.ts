@@ -101,6 +101,8 @@ const MATCH_DATA_SCHEMA = {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+class HandledClientError extends Error {}
+
 function retryDelayMs(resp: Response, attempt: number): number {
   const retryAfter = resp.headers.get("retry-after");
   const retryAfterSeconds = retryAfter ? Number(retryAfter) : NaN;
@@ -162,7 +164,7 @@ async function callAiGateway(apiKey: string, rawBase64: string, filename?: strin
     }
   }
 
-  throw new Error(`AI parsing is temporarily rate limited after ${MAX_AI_GATEWAY_ATTEMPTS} attempts: ${lastRateLimitBody.slice(0, 200)}`);
+  throw new HandledClientError(`AI parsing is temporarily rate limited after ${MAX_AI_GATEWAY_ATTEMPTS} attempts. Please wait a minute and try again.`);
 }
 
 function extractAiJsonText(aiJson: any): string {
@@ -221,8 +223,8 @@ Deno.serve(async (req) => {
     if (!aiResp.ok) {
       const txt = await aiResp.text();
       console.error("AI gateway error:", aiResp.status, txt);
-      if (aiResp.status === 402) throw new Error("AI parsing credits are depleted. Add AI balance in Lovable Cloud and try again.");
-      if (aiResp.status === 429) throw new Error("AI parsing is temporarily rate limited. Please wait a minute and try again.");
+      if (aiResp.status === 402) throw new HandledClientError("AI parsing credits are depleted. Add AI balance in Lovable Cloud and try again.");
+      if (aiResp.status === 429) throw new HandledClientError("AI parsing is temporarily rate limited. Please wait a minute and try again.");
       throw new Error(`AI parsing error ${aiResp.status}: ${txt.slice(0, 200)}`);
     }
 
@@ -246,7 +248,7 @@ Deno.serve(async (req) => {
     console.error("parse-match-pdf error:", error);
     return new Response(
       JSON.stringify({ success: false, error: error instanceof Error ? error.message : String(error) }),
-      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: error instanceof HandledClientError ? 200 : 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
