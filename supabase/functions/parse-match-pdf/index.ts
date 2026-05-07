@@ -57,8 +57,47 @@ function stripJsonFences(s: string): string {
   return t;
 }
 
-const GEMINI_MODEL = "gemini-2.0-flash";
-const MAX_GEMINI_ATTEMPTS = 4;
+const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+const AI_GATEWAY_MODEL = "google/gemini-3-flash-preview";
+const MAX_AI_GATEWAY_ATTEMPTS = 3;
+
+const MATCH_DATA_SCHEMA = {
+  type: "object",
+  properties: {
+    match_date: { type: "string" },
+    venue: { type: "string" },
+    opponent_name: { type: "string" },
+    our_score: { type: "number" },
+    opponent_score: { type: "number" },
+    our_wickets: { type: "number" },
+    opponent_wickets: { type: "number" },
+    overs: { type: "number" },
+    result: { type: "string", enum: ["won", "lost", "draw"] },
+    our_batting: { type: "array", items: { type: "object" } },
+    our_bowling: { type: "array", items: { type: "object" } },
+    our_fielding: { type: "array", items: { type: "object" } },
+    fall_of_wickets: { type: "array", items: { type: "object" } },
+    partnerships: { type: "array", items: { type: "object" } },
+    our_ball_by_ball: { type: "array", items: { type: "object" } },
+  },
+  required: [
+    "match_date",
+    "venue",
+    "opponent_name",
+    "our_score",
+    "opponent_score",
+    "our_wickets",
+    "opponent_wickets",
+    "overs",
+    "result",
+    "our_batting",
+    "our_bowling",
+    "our_fielding",
+    "fall_of_wickets",
+    "partnerships",
+    "our_ball_by_ball",
+  ],
+} as const;
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -71,43 +110,75 @@ function retryDelayMs(resp: Response, attempt: number): number {
   return Math.min(1000 * 2 ** attempt, 15000);
 }
 
-async function callGemini(GEMINI_API_KEY: string, rawBase64: string): Promise<Response> {
+async function callAiGateway(apiKey: string, rawBase64: string, filename?: string): Promise<Response> {
   let lastRateLimitBody = "";
 
-  for (let attempt = 0; attempt < MAX_GEMINI_ATTEMPTS; attempt++) {
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { inline_data: { mime_type: "application/pdf", data: rawBase64 } },
-                { text: USER_PROMPT },
-              ],
-            },
-          ],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0,
+  for (let attempt = 0; attempt < MAX_AI_GATEWAY_ATTEMPTS; attempt++) {
+    const resp = await fetch(AI_GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: AI_GATEWAY_MODEL,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: [
+              { type: "text", text: USER_PROMPT },
+              {
+                type: "file",
+                file: {
+                  filename: filename || "scorecard.pdf",
+                  file_data: `data:application/pdf;base64,${rawBase64}`,
+                },
+              },
+            ],
           },
-        }),
-      }
-    );
+        ],
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "extract_match_scorecard",
+              description: "Extract structured Stellar Slayers cricket scorecard data from the PDF.",
+              parameters: MATCH_DATA_SCHEMA,
+            },
+          },
+        ],
+        tool_choice: { type: "function", function: { name: "extract_match_scorecard" } },
+        temperature: 0,
+        max_tokens: 16000,
+      }),
+    });
 
     if (resp.status !== 429) return resp;
 
     lastRateLimitBody = await resp.text();
-    if (attempt < MAX_GEMINI_ATTEMPTS - 1) {
+    if (attempt < MAX_AI_GATEWAY_ATTEMPTS - 1) {
       await sleep(retryDelayMs(resp, attempt));
     }
   }
 
-  throw new Error(`Gemini API is temporarily rate limited after ${MAX_GEMINI_ATTEMPTS} attempts: ${lastRateLimitBody.slice(0, 200)}`);
+  throw new Error(`AI parsing is temporarily rate limited after ${MAX_AI_GATEWAY_ATTEMPTS} attempts: ${lastRateLimitBody.slice(0, 200)}`);
+}
+
+function extractAiJsonText(aiJson: any): string {
+  const toolCalls = aiJson?.choices?.[0]?.message?.tool_calls;
+  const toolArgs = toolCalls?.find?.((call: any) => call?.function?.name === "extract_match_scorecard")?.function?.arguments
+    ?? toolCalls?.[0]?.function?.arguments;
+
+  if (typeof toolArgs === "string" && toolArgs.trim()) return toolArgs;
+  if (toolArgs && typeof toolArgs === "object") return JSON.stringify(toolArgs);
+
+  const content = aiJson?.choices?.[0]?.message?.content;
+  if (typeof content === "string") return content;
+  if (Array.isArray(content)) {
+    return content.map((part: any) => typeof part === "string" ? part : part?.text ?? part?.content ?? "").join("");
+  }
+  return "";
 }
 
 Deno.serve(async (req) => {
