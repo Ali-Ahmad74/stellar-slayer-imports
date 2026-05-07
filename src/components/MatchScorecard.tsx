@@ -4,11 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Loader2, Share2 } from "lucide-react";
+import { Download, Loader2, Share2, Trophy } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { exportSingleMatchPDF, type SingleMatchExportData, type MatchExportOptions } from "@/lib/match-export";
 import { ShareMatchScorecardDialog } from "@/components/ShareMatchScorecardDialog";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { getImpactKind, IMPACT_BADGE } from "@/lib/impactPlayer";
 
 export interface BattingScorecardRow {
   player_id: number;
@@ -77,6 +78,8 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
   const [error, setError] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [potm, setPotm] = useState<{ id: number; name: string; photo_url: string | null } | null>(null);
+  const [achievements, setAchievements] = useState<Map<number, string[]>>(new Map());
   const { teamSettings } = useTeamSettings();
 
   useEffect(() => {
@@ -85,7 +88,7 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
       setLoading(true);
       setError(null);
       try {
-        const [batRes, bowlRes, fieldRes] = await Promise.all([
+        const [batRes, bowlRes, fieldRes, achRes, matchRes] = await Promise.all([
           supabase
             .from("batting_inputs")
             .select("player_id, runs, balls, fours, sixes, out, dismissal_type, balls_to_fifty, balls_to_hundred, players(name, photo_url)")
@@ -100,6 +103,15 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
             .from("fielding_inputs")
             .select("player_id, catches, runouts, stumpings, dropped_catches, players(name, photo_url)")
             .eq("match_id", matchId),
+          supabase
+            .from("player_achievements")
+            .select("player_id, achievement_type")
+            .eq("match_id", matchId),
+          supabase
+            .from("matches")
+            .select("player_of_the_match_id, players:player_of_the_match_id(name, photo_url)")
+            .eq("id", matchId)
+            .maybeSingle(),
         ]);
 
         if (batRes.error) throw batRes.error;
@@ -152,6 +164,22 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
         setBatting(battingRows);
         setBowling(bowlingRows);
         setFielding(fieldingRows);
+        const achMap = new Map<number, string[]>();
+        for (const a of (achRes.data ?? []) as any[]) {
+          if (!achMap.has(a.player_id)) achMap.set(a.player_id, []);
+          achMap.get(a.player_id)!.push(a.achievement_type);
+        }
+        setAchievements(achMap);
+        const mRow: any = matchRes.data;
+        if (mRow?.player_of_the_match_id && mRow.players) {
+          setPotm({
+            id: mRow.player_of_the_match_id,
+            name: mRow.players.name || "Unknown",
+            photo_url: mRow.players.photo_url || null,
+          });
+        } else {
+          setPotm(null);
+        }
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Failed to load scorecard");
@@ -166,6 +194,23 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
   }, [matchId]);
 
   const isEmpty = useMemo(() => batting.length === 0 && bowling.length === 0 && fielding.length === 0, [batting, bowling, fielding]);
+
+  // Compute impact kind per player from combined batting+bowling
+  const impactByPlayer = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof getImpactKind>>();
+    const all = new Set<number>();
+    batting.forEach(b => all.add(b.player_id));
+    bowling.forEach(b => all.add(b.player_id));
+    for (const pid of all) {
+      const b = batting.find(x => x.player_id === pid);
+      const bo = bowling.find(x => x.player_id === pid);
+      map.set(pid, getImpactKind({
+        runs: b?.runs, balls: b?.balls,
+        wickets: bo?.wickets, bowlBalls: bo?.balls, runsConceded: bo?.runs_conceded,
+      }));
+    }
+    return map;
+  }, [batting, bowling]);
 
   const handleExportPDF = async () => {
     if (!matchMeta) return;
@@ -250,6 +295,18 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
 
   return (
     <div className="p-4 space-y-6">
+      {/* Player of the Match highlight */}
+      {potm && (
+        <div className="rounded-xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 border border-amber-500/30 p-4 flex items-center gap-3">
+          <Trophy className="w-6 h-6 text-amber-500 shrink-0" />
+          <PlayerAvatar name={potm.name} photoUrl={potm.photo_url} size="md" />
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Player of the Match</p>
+            <p className="text-sm sm:text-base font-bold truncate">{potm.name}</p>
+          </div>
+        </div>
+      )}
+
       {/* Export buttons */}
       {showExport && matchMeta && (
         <div className="flex items-center justify-end gap-2">
@@ -303,6 +360,16 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                         {b.player_name}
                         {b.runs >= 100 && <Badge className="text-[9px] px-1">💯</Badge>}
                         {b.runs >= 50 && b.runs < 100 && <Badge variant="secondary" className="text-[9px] px-1">⭐50</Badge>}
+                        {(() => {
+                          const k = impactByPlayer.get(b.player_id);
+                          if (!k) return null;
+                          const cfg = IMPACT_BADGE[k];
+                          return (
+                            <Badge variant="outline" className={`text-[9px] px-1 ${cfg.classes}`} title={cfg.label}>
+                              {cfg.emoji}
+                            </Badge>
+                          );
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-bold">{b.runs}</TableCell>
@@ -383,6 +450,17 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                       <div className="flex items-center gap-2">
                         <PlayerAvatar name={b.player_name} photoUrl={b.player_photo_url} size="sm" />
                         {b.player_name}
+                        {achievements.get(b.player_id)?.includes("fivefer") && (
+                          <Badge className="text-[9px] px-1 bg-red-500 text-white">5fer 🔥</Badge>
+                        )}
+                        {achievements.get(b.player_id)?.includes("fourfer") && (
+                          <Badge className="text-[9px] px-1 bg-orange-500 text-white">4fer</Badge>
+                        )}
+                        {achievements.get(b.player_id)?.includes("hatrick_possible") &&
+                          !achievements.get(b.player_id)?.includes("fivefer") &&
+                          !achievements.get(b.player_id)?.includes("fourfer") && (
+                            <Badge variant="outline" className="text-[9px] px-1">Possible HT</Badge>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">{formatOvers(b.balls)}</TableCell>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DEFAULT_TEAM_LOGO_URL } from '@/lib/constants';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Header } from '@/components/Header';
@@ -93,6 +94,11 @@ const MatchHistory = () => {
   const [seriesOptions, setSeriesOptions] = useState<SeriesOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedMatchId, setExpandedMatchId] = useState<number | null>(null);
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const expand = searchParams.get('expand');
+    if (expand) setExpandedMatchId(Number(expand));
+  }, [searchParams]);
   const [selectedYear, setSelectedYear] = useState<string>('all');
   const [selectedTournamentId, setSelectedTournamentId] = useState<string>('all');
   const [selectedSeriesId, setSelectedSeriesId] = useState<string>('all');
