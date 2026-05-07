@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Medal, Loader2 } from "lucide-react";
 import { PlayerAvatar } from "@/components/PlayerAvatar";
+import { Link } from "react-router-dom";
 
 interface PlayerLite {
   id: number;
@@ -26,6 +27,8 @@ interface RecordEntry {
     player: PlayerLite;
     value: string;
     detail: string;
+    matchId?: number;
+    secondaryPlayer?: PlayerLite;
   }[];
 }
 
@@ -37,6 +40,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
   const [loading, setLoading] = useState(true);
   const [battingData, setBattingData] = useState<any[]>([]);
   const [bowlingData, setBowlingData] = useState<any[]>([]);
+  const [partnerships, setPartnerships] = useState<any[]>([]);
 
   const playerMap = useMemo(() => {
     const map = new Map<number, PlayerLite>();
@@ -46,12 +50,14 @@ export function TeamRecords({ players }: TeamRecordsProps) {
 
   useEffect(() => {
     const fetch = async () => {
-      const [{ data: bat }, { data: bowl }] = await Promise.all([
-        supabase.from("batting_inputs").select("player_id, match_id, runs, balls, fours, sixes, out").order("match_id", { ascending: true }),
+      const [{ data: bat }, { data: bowl }, { data: parts }] = await Promise.all([
+        supabase.from("batting_inputs").select("player_id, match_id, runs, balls, fours, sixes, out, balls_to_fifty, balls_to_hundred").order("match_id", { ascending: true }),
         supabase.from("bowling_inputs").select("player_id, match_id, wickets, balls, runs_conceded, maidens, dot_balls").order("match_id", { ascending: true }),
+        supabase.from("match_partnerships").select("match_id, player1_id, player2_id, runs, balls, wicket_number"),
       ]);
       setBattingData(bat || []);
       setBowlingData(bowl || []);
+      setPartnerships(parts || []);
       setLoading(false);
     };
     fetch();
@@ -74,6 +80,35 @@ export function TeamRecords({ players }: TeamRecordsProps) {
         player: p,
         value: `${highestScore.runs}${highestScore.out ? '' : '*'}`,
         detail: `off ${highestScore.balls} balls (SR: ${highestScore.balls > 0 ? ((highestScore.runs / highestScore.balls) * 100).toFixed(1) : '0'})`,
+        matchId: highestScore.match_id,
+      });
+    }
+
+    const fastestFifty = battingData
+      .filter((r: any) => r.runs >= 50 && r.balls_to_fifty)
+      .reduce((best: any, r: any) => (!best || r.balls_to_fifty < best.balls_to_fifty) ? r : best, null);
+    if (fastestFifty) {
+      const p = playerMap.get(fastestFifty.player_id);
+      if (p) battingRecords.push({
+        label: "Fastest Fifty",
+        player: p,
+        value: `${fastestFifty.balls_to_fifty} balls`,
+        detail: `scored ${fastestFifty.runs} runs`,
+        matchId: fastestFifty.match_id,
+      });
+    }
+
+    const fastestCentury = battingData
+      .filter((r: any) => r.runs >= 100 && r.balls_to_hundred)
+      .reduce((best: any, r: any) => (!best || r.balls_to_hundred < best.balls_to_hundred) ? r : best, null);
+    if (fastestCentury) {
+      const p = playerMap.get(fastestCentury.player_id);
+      if (p) battingRecords.push({
+        label: "Fastest Century",
+        player: p,
+        value: `${fastestCentury.balls_to_hundred} balls`,
+        detail: `scored ${fastestCentury.runs} runs`,
+        matchId: fastestCentury.match_id,
       });
     }
 
@@ -86,6 +121,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
         player: p,
         value: `${mostSixes.sixes} sixes`,
         detail: `scored ${mostSixes.runs} runs`,
+        matchId: mostSixes.match_id,
       });
     }
 
@@ -98,6 +134,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
         player: p,
         value: `${mostFours.fours} fours`,
         detail: `scored ${mostFours.runs} runs`,
+        matchId: mostFours.match_id,
       });
     }
 
@@ -176,6 +213,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
         player: p,
         value: `${bestFigures.wickets}/${bestFigures.runs_conceded}`,
         detail: `in ${rem > 0 ? `${overs}.${rem}` : overs} overs`,
+        matchId: bestFigures.match_id,
       });
     }
 
@@ -194,6 +232,7 @@ export function TeamRecords({ players }: TeamRecordsProps) {
         player: p,
         value: eco,
         detail: `${bestEco.wickets}/${bestEco.runs_conceded}`,
+        matchId: bestEco.match_id,
       });
     }
 
@@ -247,8 +286,46 @@ export function TeamRecords({ players }: TeamRecordsProps) {
       result.push({ category: "Bowling Records", icon: "🎯", records: bowlingRecords });
     }
 
+    // ====== PARTNERSHIPS ======
+    const partnershipRecords: RecordEntry["records"] = [];
+    if (partnerships.length > 0) {
+      const highest = partnerships.reduce((best: any, r: any) => (!best || r.runs > best.runs) ? r : best, null);
+      if (highest) {
+        const p1 = playerMap.get(highest.player1_id);
+        const p2 = playerMap.get(highest.player2_id);
+        if (p1 && p2) partnershipRecords.push({
+          label: "Highest Partnership",
+          player: p1,
+          secondaryPlayer: p2,
+          value: `${highest.runs} runs`,
+          detail: `${p1.name} & ${p2.name} (${highest.wicket_number}${ord(highest.wicket_number)} wkt)`,
+          matchId: highest.match_id,
+        });
+      }
+      for (let w = 1; w <= 10; w++) {
+        const best = partnerships
+          .filter((r: any) => r.wicket_number === w)
+          .reduce((a: any, r: any) => (!a || r.runs > a.runs) ? r : a, null);
+        if (best) {
+          const p1 = playerMap.get(best.player1_id);
+          const p2 = playerMap.get(best.player2_id);
+          if (p1 && p2) partnershipRecords.push({
+            label: `Best ${w}${ord(w)} Wicket Partnership`,
+            player: p1,
+            secondaryPlayer: p2,
+            value: `${best.runs} runs`,
+            detail: `${p1.name} & ${p2.name}`,
+            matchId: best.match_id,
+          });
+        }
+      }
+      if (partnershipRecords.length > 0) {
+        result.push({ category: "Partnership Records", icon: "🤝", records: partnershipRecords });
+      }
+    }
+
     return result;
-  }, [battingData, bowlingData, playerMap]);
+  }, [battingData, bowlingData, partnerships, playerMap]);
 
   if (loading) {
     return (
@@ -289,20 +366,28 @@ export function TeamRecords({ players }: TeamRecordsProps) {
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: idx * 0.04 }}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
-                    {idx + 1}
-                  </div>
-                  <PlayerAvatar name={record.player.name} photoUrl={record.player.photo_url} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-muted-foreground">{record.label}</p>
-                    <p className="text-sm font-bold truncate">{record.player.name}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-lg font-bold font-display text-primary">{record.value}</p>
-                    <p className="text-[10px] text-muted-foreground">{record.detail}</p>
-                  </div>
+                  {(() => {
+                    const inner = (
+                      <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border hover:bg-muted/50 transition-colors">
+                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary shrink-0">
+                          {idx + 1}
+                        </div>
+                        <PlayerAvatar name={record.player.name} photoUrl={record.player.photo_url} size="sm" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground">{record.label}</p>
+                          <p className="text-sm font-bold truncate">{record.player.name}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-lg font-bold font-display text-primary">{record.value}</p>
+                          <p className="text-[10px] text-muted-foreground line-clamp-1 max-w-[180px]">{record.detail}</p>
+                        </div>
+                      </div>
+                    );
+                    return record.matchId
+                      ? <Link to={`/matches?expand=${record.matchId}`} className="block">{inner}</Link>
+                      : inner;
+                  })()}
                 </motion.div>
               ))}
             </div>
@@ -311,4 +396,9 @@ export function TeamRecords({ players }: TeamRecordsProps) {
       </CardContent>
     </Card>
   );
+}
+
+function ord(n: number): string {
+  const s = ["th", "st", "nd", "rd"], v = n % 100;
+  return s[(v - 20) % 10] || s[v] || s[0];
 }
