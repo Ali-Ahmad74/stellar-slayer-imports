@@ -35,6 +35,8 @@ import {
   findPlayer,
   normalizeResult,
   oversToBalls,
+  deriveBatterBallStats,
+  deriveBowlerBallStats,
 } from "@/lib/pdf-import-helpers";
 
 interface Props {
@@ -57,7 +59,7 @@ type FileEntry = {
 
 type Step = "select" | "preview" | "result";
 
-const PARALLEL = 2;
+const PARALLEL = 1;
 
 export function PDFImportDialog({ players, series, seasons, teamId, onImportComplete }: Props) {
   const [open, setOpen] = useState(false);
@@ -208,6 +210,7 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
       opponent_score: parsed.opponent_score ?? 0,
       overs: parsed.overs ?? 20,
       result: normalizeResult(parsed.result),
+      ball_by_ball: parsed.our_ball_by_ball ?? null,
     };
     const matchInsert = await insertWithSafeNumericId("matches", matchPayload);
     if (matchInsert.error) throw matchInsert.error;
@@ -224,6 +227,11 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
     if (matchFetchErr || !matchRow) throw new Error("Could not retrieve inserted match id");
     const matchId = matchRow.id;
 
+    // Derived ball-by-ball stats (more accurate than summary numbers)
+    const batterBbb = deriveBatterBallStats(parsed.our_ball_by_ball);
+    const bowlerBbb = deriveBowlerBallStats(parsed.our_ball_by_ball);
+    const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, " ").replace(/[^\w\s'.-]/g, "").trim();
+
     // 2. Batting
     const battingRows: any[] = [];
     const attendanceIds = new Set<number>();
@@ -232,10 +240,12 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
       if (!p) continue;
       attendanceIds.add(p.id);
       const runs = b.runs ?? 0;
-      const balls = b.balls ?? 0;
-      // milestone balls: data is per-innings runs/balls; if reached, attribute the innings ball-count
-      const balls_to_fifty = runs >= 50 && balls > 0 ? balls : null;
-      const balls_to_hundred = runs >= 100 && balls > 0 ? balls : null;
+      const bbbStats = batterBbb.get(normalize(b.name));
+      // Prefer ball-by-ball derived legal balls when available
+      const balls = bbbStats?.balls && bbbStats.balls > 0 ? bbbStats.balls : (b.balls ?? 0);
+      // Accurate balls-to-fifty/hundred from ball-by-ball; fallback to innings ball-count
+      const balls_to_fifty = bbbStats?.ballsToFifty ?? (runs >= 50 && balls > 0 ? balls : null);
+      const balls_to_hundred = bbbStats?.ballsToHundred ?? (runs >= 100 && balls > 0 ? balls : null);
       battingRows.push({
         match_id: matchId,
         player_id: p.id,
@@ -258,9 +268,13 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
       const p = findPlayer(bw.name, playerMap);
       if (!p) continue;
       attendanceIds.add(p.id);
-      const balls = oversToBalls(bw.overs);
+      const bbbBowl = bowlerBbb.get(normalize(bw.name));
+      const balls = bbbBowl?.legalBalls && bbbBowl.legalBalls > 0 ? bbbBowl.legalBalls : oversToBalls(bw.overs);
       const runsConceded = bw.runs_conceded ?? 0;
-      const dotBalls = Math.max(0, Math.min(balls, balls - runsConceded));
+      // Accurate dot-balls from ball-by-ball; fallback to legacy estimate
+      const dotBalls = bbbBowl?.dotBalls != null
+        ? bbbBowl.dotBalls
+        : Math.max(0, Math.min(balls, balls - runsConceded));
       bowlingRows.push({
         match_id: matchId,
         player_id: p.id,
