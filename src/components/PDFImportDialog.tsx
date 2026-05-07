@@ -59,7 +59,7 @@ type FileEntry = {
 
 type Step = "select" | "preview" | "result";
 
-const PARALLEL = 2;
+const PARALLEL = 1;
 
 export function PDFImportDialog({ players, series, seasons, teamId, onImportComplete }: Props) {
   const [open, setOpen] = useState(false);

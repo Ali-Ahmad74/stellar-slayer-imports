@@ -57,6 +57,59 @@ function stripJsonFences(s: string): string {
   return t;
 }
 
+const GEMINI_MODEL = "gemini-2.0-flash";
+const MAX_GEMINI_ATTEMPTS = 4;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function retryDelayMs(resp: Response, attempt: number): number {
+  const retryAfter = resp.headers.get("retry-after");
+  const retryAfterSeconds = retryAfter ? Number(retryAfter) : NaN;
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    return Math.min(retryAfterSeconds * 1000, 15000);
+  }
+  return Math.min(1000 * 2 ** attempt, 15000);
+}
+
+async function callGemini(GEMINI_API_KEY: string, rawBase64: string): Promise<Response> {
+  let lastRateLimitBody = "";
+
+  for (let attempt = 0; attempt < MAX_GEMINI_ATTEMPTS; attempt++) {
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { inline_data: { mime_type: "application/pdf", data: rawBase64 } },
+                { text: USER_PROMPT },
+              ],
+            },
+          ],
+          generationConfig: {
+            response_mime_type: "application/json",
+            temperature: 0,
+          },
+        }),
+      }
+    );
+
+    if (resp.status !== 429) return resp;
+
+    lastRateLimitBody = await resp.text();
+    if (attempt < MAX_GEMINI_ATTEMPTS - 1) {
+      await sleep(retryDelayMs(resp, attempt));
+    }
+  }
+
+  throw new Error(`Gemini API is temporarily rate limited after ${MAX_GEMINI_ATTEMPTS} attempts: ${lastRateLimitBody.slice(0, 200)}`);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -93,36 +146,7 @@ Deno.serve(async (req) => {
       ? pdf_base64.replace(/^data:application\/pdf;base64,/, "")
       : pdf_base64;
 
-    const aiResp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-          contents: [
-            {
-              role: "user",
-              parts: [
-                { inline_data: { mime_type: "application/pdf", data: rawBase64 } },
-                { text: USER_PROMPT },
-              ],
-            },
-          ],
-          generationConfig: {
-            response_mime_type: "application/json",
-            temperature: 0,
-          },
-        }),
-      }
-    );
-
-    if (aiResp.status === 429) {
-      return new Response(
-        JSON.stringify({ error: "Rate limit exceeded. Please wait and try again." }),
-        { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const aiResp = await callGemini(GEMINI_API_KEY, rawBase64);
     if (!aiResp.ok) {
       const txt = await aiResp.text();
       console.error("Gemini API error:", aiResp.status, txt);
