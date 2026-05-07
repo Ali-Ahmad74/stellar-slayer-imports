@@ -9,6 +9,7 @@ import { PlayerAvatar } from "@/components/PlayerAvatar";
 import { exportSingleMatchPDF, type SingleMatchExportData, type MatchExportOptions } from "@/lib/match-export";
 import { ShareMatchScorecardDialog } from "@/components/ShareMatchScorecardDialog";
 import { useTeamSettings } from "@/hooks/useTeamSettings";
+import { getImpactKind, IMPACT_BADGE } from "@/lib/impactPlayer";
 
 export interface BattingScorecardRow {
   player_id: number;
@@ -194,6 +195,23 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
 
   const isEmpty = useMemo(() => batting.length === 0 && bowling.length === 0 && fielding.length === 0, [batting, bowling, fielding]);
 
+  // Compute impact kind per player from combined batting+bowling
+  const impactByPlayer = useMemo(() => {
+    const map = new Map<number, ReturnType<typeof getImpactKind>>();
+    const all = new Set<number>();
+    batting.forEach(b => all.add(b.player_id));
+    bowling.forEach(b => all.add(b.player_id));
+    for (const pid of all) {
+      const b = batting.find(x => x.player_id === pid);
+      const bo = bowling.find(x => x.player_id === pid);
+      map.set(pid, getImpactKind({
+        runs: b?.runs, balls: b?.balls,
+        wickets: bo?.wickets, bowlBalls: bo?.balls, runsConceded: bo?.runs_conceded,
+      }));
+    }
+    return map;
+  }, [batting, bowling]);
+
   const handleExportPDF = async () => {
     if (!matchMeta) return;
     setExporting(true);
@@ -342,6 +360,16 @@ export function MatchScorecard({ matchId, showExport, matchMeta, exportOptions }
                         {b.player_name}
                         {b.runs >= 100 && <Badge className="text-[9px] px-1">💯</Badge>}
                         {b.runs >= 50 && b.runs < 100 && <Badge variant="secondary" className="text-[9px] px-1">⭐50</Badge>}
+                        {(() => {
+                          const k = impactByPlayer.get(b.player_id);
+                          if (!k) return null;
+                          const cfg = IMPACT_BADGE[k];
+                          return (
+                            <Badge variant="outline" className={`text-[9px] px-1 ${cfg.classes}`} title={cfg.label}>
+                              {cfg.emoji}
+                            </Badge>
+                          );
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="text-center font-bold">{b.runs}</TableCell>
