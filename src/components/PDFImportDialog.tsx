@@ -405,6 +405,24 @@ export function PDFImportDialog({ players, series, seasons, teamId, onImportComp
     setSaving(false);
     setStep("result");
     onImportComplete();
+
+    // Send push notification per successfully saved match
+    const savedEntries = files.filter((f) => f.status === "saved" && f.parsed);
+    for (const entry of savedEntries) {
+      const opp = entry.parsed?.opponent_name || "opponent";
+      const result = entry.parsed?.result || "";
+      try {
+        await supabase.functions.invoke("send-push-notification", {
+          body: {
+            title: "🏏 New Match Added!",
+            body: `Match vs ${opp}${result ? ` — ${result}` : ""}`,
+            url: "/matches",
+          },
+        });
+      } catch (e) {
+        console.error("Push notification failed:", e);
+      }
+    }
   };
 
   const parsedCount = files.filter((f) => f.status === "parsed").length;
