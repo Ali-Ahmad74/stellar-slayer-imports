@@ -86,32 +86,41 @@ Deno.serve(async (req) => {
       throw new Error("pdf_base64 is required");
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
+    if (!ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY is not configured");
 
-    const dataUrl = pdf_base64.startsWith("data:")
-      ? pdf_base64
-      : `data:application/pdf;base64,${pdf_base64}`;
+    // Strip data URL prefix if present — Anthropic expects raw base64
+    const rawBase64 = pdf_base64.startsWith("data:")
+      ? pdf_base64.replace(/^data:application\/pdf;base64,/, "")
+      : pdf_base64;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 16000,
+        system: SYSTEM_PROMPT,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
           {
             role: "user",
             content: [
+              {
+                type: "document",
+                source: {
+                  type: "base64",
+                  media_type: "application/pdf",
+                  data: rawBase64,
+                },
+              },
               { type: "text", text: USER_PROMPT },
-              { type: "image_url", image_url: { url: dataUrl } },
             ],
           },
         ],
-        response_format: { type: "json_object" },
       }),
     });
 
@@ -121,20 +130,14 @@ Deno.serve(async (req) => {
         { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-    if (aiResp.status === 402) {
-      return new Response(
-        JSON.stringify({ error: "AI credits exhausted. Add credits in Workspace → Usage." }),
-        { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
     if (!aiResp.ok) {
       const txt = await aiResp.text();
-      console.error("AI gateway error:", aiResp.status, txt);
-      throw new Error(`AI gateway error ${aiResp.status}`);
+      console.error("Anthropic API error:", aiResp.status, txt);
+      throw new Error(`Anthropic API error ${aiResp.status}: ${txt.slice(0, 200)}`);
     }
 
     const aiJson = await aiResp.json();
-    const content: string = aiJson?.choices?.[0]?.message?.content ?? "";
+    const content: string = aiJson?.content?.[0]?.text ?? "";
     if (!content) throw new Error("AI returned empty response");
 
     let parsed: unknown;
