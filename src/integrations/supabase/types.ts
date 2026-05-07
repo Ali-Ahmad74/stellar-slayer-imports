@@ -437,6 +437,7 @@ export type Database = {
           our_score: number | null
           overs: number
           player_of_the_match_id: number | null
+          potm_locked: boolean
           result: string | null
           season_id: number | null
           series_id: number | null
@@ -455,6 +456,7 @@ export type Database = {
           our_score?: number | null
           overs?: number
           player_of_the_match_id?: number | null
+          potm_locked?: boolean
           result?: string | null
           season_id?: number | null
           series_id?: number | null
@@ -473,6 +475,7 @@ export type Database = {
           our_score?: number | null
           overs?: number
           player_of_the_match_id?: number | null
+          potm_locked?: boolean
           result?: string | null
           season_id?: number | null
           series_id?: number | null
@@ -524,6 +527,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      player_achievements: {
+        Row: {
+          achievement_type: string
+          created_at: string
+          details: Json | null
+          id: string
+          match_id: number
+          player_id: number
+        }
+        Insert: {
+          achievement_type: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          match_id: number
+          player_id: number
+        }
+        Update: {
+          achievement_type?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          match_id?: number
+          player_id?: number
+        }
+        Relationships: []
       }
       players: {
         Row: {
@@ -1192,6 +1222,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      recompute_match_derived: {
+        Args: { p_match_id: number }
+        Returns: undefined
       }
     }
     Enums: {
