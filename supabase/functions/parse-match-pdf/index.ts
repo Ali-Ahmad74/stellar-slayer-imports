@@ -210,23 +210,24 @@ Deno.serve(async (req) => {
       throw new Error("pdf_base64 is required");
     }
 
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const rawBase64 = pdf_base64.startsWith("data:")
       ? pdf_base64.replace(/^data:application\/pdf;base64,/, "")
       : pdf_base64;
 
-    const aiResp = await callGemini(GEMINI_API_KEY, rawBase64);
+    const aiResp = await callAiGateway(LOVABLE_API_KEY, rawBase64, filename);
     if (!aiResp.ok) {
       const txt = await aiResp.text();
-      console.error("Gemini API error:", aiResp.status, txt);
-      throw new Error(`Gemini API error ${aiResp.status}: ${txt.slice(0, 200)}`);
+      console.error("AI gateway error:", aiResp.status, txt);
+      if (aiResp.status === 402) throw new Error("AI parsing credits are depleted. Add AI balance in Lovable Cloud and try again.");
+      if (aiResp.status === 429) throw new Error("AI parsing is temporarily rate limited. Please wait a minute and try again.");
+      throw new Error(`AI parsing error ${aiResp.status}: ${txt.slice(0, 200)}`);
     }
 
     const aiJson = await aiResp.json();
-    const content: string =
-      aiJson?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text ?? "").join("") ?? "";
+    const content = extractAiJsonText(aiJson);
     if (!content) throw new Error("AI returned empty response");
 
     let parsed: unknown;
